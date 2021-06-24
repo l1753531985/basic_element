@@ -15,7 +15,6 @@ public:
 	void addEntry(string);
 	bool contains(string);
 	int getAddress(string);
-	int getVariableRamAddress();
 	~SymbolTable();
 	//test
 	void showTable();

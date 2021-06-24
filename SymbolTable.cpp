@@ -42,11 +42,6 @@ int SymbolTable::getAddress(string symbol)
 	return get(symbol)->second;
 }
 
-int SymbolTable::getVariableRamAddress()
-{
-	return variable_to_ram; 
-}
-
 SymbolTable::~SymbolTable()
 {
 	delete symbol_map;

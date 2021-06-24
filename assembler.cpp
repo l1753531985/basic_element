@@ -49,11 +49,17 @@ void nomalOperate(Parser& parser, SymbolTable& symbols, Code& code, ofstream& of
 					str += x;
 			for (char x : str)
 				if (isalpha(x)) 
+					hasAlpha = true;
 			if (hasAlpha)
 				isVariable = !symbols.contains(str);
 			if (isVariable)
 				symbols.addEntry(str);
-			long long unsigned int num = atoi(str.c_str());
+
+			long long unsigned int num = 0;
+			if (hasAlpha)
+				num = symbols.getAddress(str);
+			else 
+				num = atoi(str.c_str());
 			bitset<16> A_Command2bit{num};
 			A_Command2bit.reset(15);
 			ofs << A_Command2bit << endl;	
@@ -72,7 +78,7 @@ void nomalOperate(Parser& parser, SymbolTable& symbols, Code& code, ofstream& of
 			ofs << C_Command2bit<<endl;
 		}
 	}
-	symbols.showTable();
+	//symbols.showTable();
 }
 
 int main(int ac, char* argv[])
