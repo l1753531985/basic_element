@@ -7,7 +7,7 @@
 
 void perOperate(Parser& pas, SymbolTable& sym)
 {
-	int command_num = 0; 
+	int command_num = -1; 
 	while (true)
 	{
 		pas.advance();
