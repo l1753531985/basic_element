@@ -70,6 +70,8 @@ Command Parser::commandType()
 
 string Parser::arg1()
 {
+	if (commandType() == C_RETURN) throw "The funciton can not be called by return command!";
+	if (commandType() == C_ARITHMETIC) return current_command;
 	int pos_start = current_command.find(' ');
 	int pos_end = pos_start;
 	if (pos_start != string::npos)
@@ -80,6 +82,7 @@ string Parser::arg1()
 
 int Parser::arg2()
 {
+	if (commandType() != C_PUSH && commandType() != C_POP && commandType() != C_FUNCTION && commandType() != C_CALL) throw "This command can not call the function!";
 	int pos_start = current_command.rfind(' ');
 	return atoi(current_command.substr(pos_start+1).c_str());
 }
