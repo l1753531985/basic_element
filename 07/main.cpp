@@ -1,11 +1,13 @@
 #include <iostream>
 #include "Parser.h"
+#include "CodeWriter.h"
 
 using namespace std;
 
 int main()
 {
 	Parser parser{"./BasicTest.vm"};
+	CodeWriter code_write{"BasicTest"};
 	while (true)
 	{
 		if (!parser.hasMoreCommands()) break;
