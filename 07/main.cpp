@@ -12,10 +12,20 @@ int main()
 	{
 		if (!parser.hasMoreCommands()) break;
 		parser.advance();
-		//cout << parser.getCommand() << endl;
+		cout << parser.getCommand() << endl;
 		try {
-			//cout << parser.arg1() << endl;
-			cout << parser.arg2() << endl;
+			Command cmd = parser.commandType();
+			switch (cmd)
+			{
+				case C_ARITHMETIC:
+					code_write.writeArithmetic(parser.arg1());
+					break;
+				case C_PUSH: case C_POP:
+					code_write.writePushPop(cmd, parser.arg1(), parser.arg2());
+					break;
+				default:
+					break;
+			}
 		} catch (const char* msg) {
 			cerr << msg << endl;
 		}

@@ -1,4 +1,5 @@
 #include <fstream>
+#include <iostream>
 #include <unordered_map>
 #include <string>
 #include "Parser.h"
@@ -10,9 +11,8 @@ enum Segment {CONSTANT, LOCAL, ARGUMENT, THIS, THAT, POINTER};
 
 class CodeWriter {
 private:
-	string file_name;
-	fstream asm_file;
-	ofstream hack_file;
+	string default_file_name;
+	ofstream asm_file;
 	unordered_map<ArithemticCmd, string>* cmd2Asm;
 	unordered_map<string, ArithemticCmd>* str2Amcmd;
 	unordered_map<string, Segment>* str2Seg;
