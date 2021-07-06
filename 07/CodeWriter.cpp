@@ -1,10 +1,11 @@
 #include "CodeWriter.h"
 
 CodeWriter::CodeWriter(string file_name)
-	:default_file_name{file_name}, cmd2Asm{new unordered_map<ArithemticCmd, string>}, str2Amcmd{new unordered_map<string, ArithemticCmd>}, str2Seg{new unordered_map<string, Segment>}
+	:default_file_name{file_name}, cmd2Asm{new unordered_map<ArithemticCmd, string>}, str2Amcmd{new unordered_map<string, ArithemticCmd>}, str2Seg{new unordered_map<string, Segment>}, seg2Addr{new unordered_map<Segment, string>}	
 {
 	asm_file.open(default_file_name+".asm");
-	str2Seg->insert({{"constant", CONSTANT}, {"local", LOCAL}, {"argument", ARGUMENT}, {"this", THIS}, {"that", THAT}, {"pointer", POINTER}});
+	str2Seg->insert({{"constant", CONSTANT}, {"local", LOCAL}, {"argument", ARGUMENT}, {"this", THIS}, {"that", THAT}, {"pointer", POINTER}, {"temp", TEMP}});
+	seg2Addr->insert({{Segment::CONSTANT, ""}, {Segment::LOCAL, "LCL"}, {Segment::ARGUMENT, "ARG"}, {Segment::THIS, "THIS"}, {Segment::THAT, "THAT"}, {Segment::TEMP, "5"}});
 	str2Amcmd->insert({{"add", ArithemticCmd::ADD},{"sub", ArithemticCmd::SUB}, {"neg", ArithemticCmd::NEG}, {"eq", ArithemticCmd::EQ}, {"gt", ArithemticCmd::GT}, {"lt", ArithemticCmd::LT}, {"and", ArithemticCmd::AND}, {"or", ArithemticCmd::OR}, {"not", ArithemticCmd::NOT}});
 	cmd2Asm->insert({{ArithemticCmd::ADD, "@SP\nM=M-1\nA=M\nD=M\n@SP\nM=M-1\nA=M\nM=D+M\n@SP\nM=M+1\n"}, {ArithemticCmd::SUB, "@SP\nM=M-1\nA=M\nD=M\n@SP\nM=M-1\nA=M\nM=M-D\n@SP\nM=M+1\n"}});
 }
@@ -34,6 +35,21 @@ void CodeWriter::writeArithmetic(string specific_cmd)
 			real_cmd += x;
 	ArithemticCmd cmd = str2Amcmd->find(real_cmd)->second;
 	string asm_cmd = cmd2Asm->find(cmd)->second;
+	asm_file << asm_cmd;
+}
+
+string CodeWriter::push_asm_str(string seg_basic_addr, int index)
+{
+	string asm_cmd = "@"+seg_basic_addr+"\nD=M\n@"+to_string(index)+"\nA=A+D\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n";
+	return asm_cmd;
+}
+
+string CodeWriter::pop_asm_str(string seg_basic_addr, int index)
+{
+	string asm_cmd = "@SP\nM=M-1\nA=M\nD=M\n@"+seg_basic_addr+"\n";
+	for (int i = 0; i < index; i++) asm_cmd += "A=A+1\n";
+	asm_cmd += "M=D\n";
+	return asm_cmd;
 }
 
 void CodeWriter::writePushPop(Command cmd, string seg, int index)
@@ -44,51 +60,17 @@ void CodeWriter::writePushPop(Command cmd, string seg, int index)
 	for (char x : seg)
 		if (isalpha(x)) 
 			real_seg += x;
-	if (cmd == Command::C_PUSH)
-	{
-		Segment segment = str2Seg->find(real_seg)->second;
-		string asm_cmd = "";
-		switch (segment)
-		{
-			case Segment::CONSTANT:
-				asm_cmd = "@"+to_string(index)+"\nD=A\n@SP\nA=M\nM=D\n@SP\nM=M+1\n";
-				break;
-			case Segment::LOCAL:
-				asm_cmd = "@LCL\nD=M\n@"+to_string(index)+"\nA=A+D\nD=M\n@SP\nA=M\nM=D@SP\nM=M+1\n";
-				break;
-			case Segment::ARGUMENT:
-				asm_cmd = "@ARG\nD=M\n@"+to_string(index)+"\nA=A+D\nD=M\n@SP\nA=M\nM=D@SP\nM=M+1\n";
-				break;
-			case Segment::THIS:
-				asm_cmd = "@THIS\nD=M\n@"+to_string(index)+"\nA=A+D\nD=M\n@SP\nA=M\nM=D@SP\nM=M+1\n";
-				break;
-			case Segment::THAT:
-				asm_cmd = "@THAT\nD=M\n@"+to_string(index)+"\nA=A+D\nD=M\n@SP\nA=M\nM=D@SP\nM=M+1\n";
-				break;
-			case Segment::POINTER:
-				break;
-		}
-	}			
+	string asm_cmd = "";
+	Segment segment = str2Seg->find(real_seg)->second;
+	string basic_addr = "";
+	if (segment == Segment::POINTER)
+		basic_addr = (index) ? 4 : 3;
 	else
-	{
-		Segment segment = str2Seg->find(real_seg)->second;
-		string asm_cmd = "";
-		switch (segment)
-		{
-			case Segment::LOCAL:
-				asm_cmd = "@SP\nM=M-1\nA=M\nD=M\n@LCL\nA=M\nA=A+"+to_string(index-1)+"\nM=D\n";
-				break;
-			case Segment::ARGUMENT:
-				asm_cmd = "@SP\nM=M-1\nA=M\nD=M\n@ARG\nA=M\nA=A+"+to_string(index-1)+"\nM=D\n";
-				break;
-			case Segment::THIS:
-				asm_cmd = "@SP\nM=M-1\nA=M\nD=M\n@THIS\nA=M\nA=A+"+to_string(index-1)+"\nM=D\n";
-				break;
-			case Segment::THAT:
-				asm_cmd = "@SP\nM=M-1\nA=M\nD=M\n@THAT\nA=M\nA=A+"+to_string(index-1)+"\nM=D\n";
-				break;
-			case Segment::POINTER:
-				break;
-		}
-	}
+		basic_addr = seg2Addr->find(segment)->second;
+	if (cmd == Command::C_PUSH)
+		asm_cmd = push_asm_str(basic_addr, index);
+	else
+		asm_cmd = pop_asm_str(basic_addr, index);
+	//cout << asm_cmd << endl;
+	asm_file << asm_cmd;
 }

@@ -12,7 +12,7 @@ int main()
 	{
 		if (!parser.hasMoreCommands()) break;
 		parser.advance();
-		cout << parser.getCommand() << endl;
+		//cout << parser.getCommand() << endl;
 		try {
 			Command cmd = parser.commandType();
 			switch (cmd)
