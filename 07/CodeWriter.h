@@ -7,7 +7,7 @@
 using namespace std;
 
 enum ArithemticCmd {ADD, SUB, NEG, EQ, GT, LT, AND, OR, NOT}; 
-enum Segment {CONSTANT, LOCAL, ARGUMENT, THIS, THAT, POINTER, TEMP};
+enum Segment {CONSTANT, LOCAL, ARGUMENT, THIS, THAT, POINTER, TEMP, STATIC};
 
 class CodeWriter {
 private:
