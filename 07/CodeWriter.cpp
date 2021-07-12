@@ -1,14 +1,23 @@
 #include "CodeWriter.h"
 
 CodeWriter::CodeWriter(string file_name)
-	:default_file_name{file_name}, cmd2Asm{new unordered_map<ArithemticCmd, string>}, str2Amcmd{new unordered_map<string, ArithemticCmd>}, str2Seg{new unordered_map<string, Segment>}, seg2Addr{new unordered_map<Segment, string>}	
+	:default_file_name{file_name}, CODEFLAG1{0}, CODEFLAG2{0}, cmd2Asm{new unordered_map<ArithemticCmd, string>}, str2Amcmd{new unordered_map<string, ArithemticCmd>}, str2Seg{new unordered_map<string, Segment>}, seg2Addr{new unordered_map<Segment, string>}	
 {
 	asm_file.open(default_file_name+".asm");
 	str2Seg->insert({{"constant", CONSTANT}, {"local", LOCAL}, {"argument", ARGUMENT}, {"this", THIS}, {"that", THAT}, {"pointer", POINTER}, {"temp", TEMP}, {"static", STATIC}});
 	string static_addr = default_file_name + ".";
 	seg2Addr->insert({{Segment::CONSTANT, ""}, {Segment::LOCAL, "LCL"}, {Segment::ARGUMENT, "ARG"}, {Segment::THIS, "THIS"}, {Segment::THAT, "THAT"}, {Segment::TEMP, "5"}, {Segment::STATIC, static_addr}});
 	str2Amcmd->insert({{"add", ArithemticCmd::ADD},{"sub", ArithemticCmd::SUB}, {"neg", ArithemticCmd::NEG}, {"eq", ArithemticCmd::EQ}, {"gt", ArithemticCmd::GT}, {"lt", ArithemticCmd::LT}, {"and", ArithemticCmd::AND}, {"or", ArithemticCmd::OR}, {"not", ArithemticCmd::NOT}});
-	cmd2Asm->insert({{ArithemticCmd::ADD, "@SP\nM=M-1\nA=M\nD=M\n@SP\nM=M-1\nA=M\nM=D+M\n@SP\nM=M+1\n"}, {ArithemticCmd::SUB, "@SP\nM=M-1\nA=M\nD=M\n@SP\nM=M-1\nA=M\nM=M-D\n@SP\nM=M+1\n"}});
+
+	string common_str_pre = "@SP\nM=M-1\nA=M\nD=M\n@SP\nM=M-1\nA=M\n";
+	string common_str_post = "\n@SP\nM=M+1\n";
+	cmd2Asm->insert({{ArithemticCmd::ADD, common_str_pre+"M=M+1"+common_str_post}, {ArithemticCmd::SUB, common_str_pre+"M=M-D"+common_str_post}, {ArithemticCmd::AND, common_str_pre+"M=D&M"+common_str_post}, {ArithemticCmd::OR, common_str_pre+"M=D|M"+common_str_post}});
+
+	string common_str_pre2 = "@SP\nM=M-1\nA=M\n";
+	string common_str_post2 = "\n@SP\nM=M+1\n";
+	cmd2Asm->insert({{ArithemticCmd::NEG, common_str_pre2+"M=-M"+common_str_post2}, {ArithemticCmd::NOT, common_str_pre2+"M=!M"+common_str_post2}});
+
+	cmd2Asm->insert({{ArithemticCmd::EQ, "D;JEQ"}, {ArithemticCmd::GT, "D;JGT"}, {ArithemticCmd::LT, "D;JLT"}});
 }
 
 CodeWriter::~CodeWriter()
@@ -28,6 +37,21 @@ void CodeWriter::setFileName(string file_name)
 	asm_file.open(default_file_name+".asm");
 }
 
+string CodeWriter::cmp_asm_str(string core_part)
+{
+	string append_str = "";
+	string CODEFLAG1_str = to_string(CODEFLAG1);
+	string CODEFLAG2_str = to_string(CODEFLAG2);
+	CODEFLAG1++;
+	CODEFLAG2++;
+
+	string str_cmp_cmd_pre = "@SP\nM=M-1\nA=M\nD=M\n@SP\nM=M-1\nA=M\nD=M-D\n@RET_TRUE"+CODEFLAG1_str+"\n";
+	string str_cmp_cmd_post = "\nD=0\n@CONTINUE"+CODEFLAG2_str+"\n0;JMP\n(RET_TRUE"+CODEFLAG1_str+")\nD=-1\n(CONTINUE"+CODEFLAG2_str+")\n@SP\nA=M\nM=D\n@SP\nM=M+1\n";
+	string complete_cmd_str = str_cmp_cmd_pre + core_part + str_cmp_cmd_post; 
+
+	return complete_cmd_str;
+}
+
 void CodeWriter::writeArithmetic(string specific_cmd) 
 {
 	string real_cmd = "";
@@ -36,6 +60,9 @@ void CodeWriter::writeArithmetic(string specific_cmd)
 			real_cmd += x;
 	ArithemticCmd cmd = str2Amcmd->find(real_cmd)->second;
 	string asm_cmd = cmd2Asm->find(cmd)->second;
+	//cout << "asm_cmd: " << asm_cmd << endl;
+	if (cmd == ArithemticCmd::EQ || cmd == ArithemticCmd::LT || cmd == ArithemticCmd::GT)		
+		asm_cmd = cmp_asm_str(asm_cmd);
 	asm_file << asm_cmd;
 }
 

@@ -13,12 +13,15 @@ class CodeWriter {
 private:
 	string default_file_name;
 	ofstream asm_file;
+	int CODEFLAG1;
+	int CODEFLAG2;
 	unordered_map<ArithemticCmd, string>* cmd2Asm;
 	unordered_map<string, ArithemticCmd>* str2Amcmd;
 	unordered_map<string, Segment>* str2Seg;
 	unordered_map<Segment, string>* seg2Addr;
 	string push_asm_str(string, int);
 	string pop_asm_str(string, int);
+	string cmp_asm_str(string);
 public:
 	CodeWriter(string);
 	void setFileName(string);
