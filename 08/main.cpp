@@ -6,14 +6,17 @@ using namespace std;
 
 int main(int ac, char* argv[])
 {
+	const int remain_arg_num = 2;
 	string postfix = ".vm";
-	while (--ac)
+	CodeWriter code_write{argv[remain_arg_num-1]};
+	code_write.writeInit();
+	while (ac > remain_arg_num)
 	{
+		ac--;
 		string file_name = argv[ac]; 
 		string file_vm_name = file_name;
 		string file_barely_name = file_name.substr(0, file_name.find(postfix));
 		Parser parser{file_vm_name};
-		CodeWriter code_write{file_barely_name};
 		while (true)
 		{
 			if (!parser.hasMoreCommands()) break;
@@ -37,6 +40,9 @@ int main(int ac, char* argv[])
 						break;
 					case C_RETURN:
 						code_write.writeRuturn();
+						break;
+					case C_CALL:
+						code_write.writeCall(parser.arg1(), parser.arg2());
 						break;
 					default:
 						break;

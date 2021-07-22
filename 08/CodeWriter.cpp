@@ -181,21 +181,21 @@ void CodeWriter::writeFunction(string function_name, int args_nums)
 void CodeWriter::writeRuturn()
 {
 	string asm_cmd_lcl = "@LCL\nD=M\n@13\nM=D\n";
-	string asm_cmd_ret_addr = "@13\nD=M\n@5\nD=D-A\n@14\nM=D\n";
+	string asm_cmd_ret_addr = "@13\nD=M\n@5\nD=D-A\nA=D\nD=M\n@14\nM=D\n";
 	string asm_cmd_ret_val = "@SP\nM=M-1\nA=M\nD=M\n@ARG\nA=M\nM=D\n";
 	string asm_cmd_reset_sp = "@ARG\nD=M+1\n@SP\nM=D\n";
 	string asm_cmd_reset_that = "@13\nA=M-1\nD=M\n@THAT\nM=D\n";
 	string asm_cmd_reset_this = "@2\nD=A\n@13\nD=M-D\nA=D\nD=M\n@THIS\nM=D\n";
 	string asm_cmd_reset_arg = "@3\nD=A\n@13\nD=M-D\nA=D\nD=M\n@ARG\nM=D\n";
 	string asm_cmd_reset_lcl = "@4\nD=A\n@13\nD=M-D\nA=D\nD=M\n@LCL\nM=D\n";
-	string asm_cmd_goto_ret = "@14\nA=M\n";
+	string asm_cmd_goto_ret = "@14\nA=M\n0;JMP\n";
 	string asm_cmd = asm_cmd_lcl + asm_cmd_ret_addr + asm_cmd_ret_val + asm_cmd_reset_sp + asm_cmd_reset_that + asm_cmd_reset_this + asm_cmd_reset_arg + asm_cmd_reset_lcl + asm_cmd_goto_ret;
 	asm_file << asm_cmd;
 }
 
 void CodeWriter::writeCall(string function_name, int local_num)
 {
-	string tag = "retAddr"+RET_FLAG;			
+	string tag = "retAddr"+to_string(RET_FLAG);			
 	RET_FLAG++;
 	string asm_cmd_push = "@SP\nA=M\nM=D\n@SP\nM=M+1\n";
 	string asm_cmd_push_ret_addr = "@"+tag+"\nD=A\n"+asm_cmd_push;
@@ -209,4 +209,11 @@ void CodeWriter::writeCall(string function_name, int local_num)
 	string asm_cmd_set_tag = "("+tag+")\n";
 	string asm_cmd = asm_cmd_push_ret_addr + asm_cmd_push_local + asm_cmd_push_arg + asm_cmd_push_this + asm_cmd_push_that + asm_cmd_reset_arg + asm_cmd_reset_lcl + asm_cmd_goto_func + asm_cmd_set_tag;
 	asm_file << asm_cmd;
+}
+
+void CodeWriter::writeInit()
+{
+	string asm_cmd_set_sp = "@256\nD=A\n@SP\nM=D\n";
+	asm_file << asm_cmd_set_sp;
+	writeCall("Sys.init", 0); 
 }

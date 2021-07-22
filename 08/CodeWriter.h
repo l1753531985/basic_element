@@ -35,5 +35,6 @@ public:
 	void writeFunction(string, int);
 	void writeRuturn();
 	void writeCall(string, int);
+	void writeInit();
 	~CodeWriter();
 };
