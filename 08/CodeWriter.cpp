@@ -203,8 +203,13 @@ void CodeWriter::writeCall(string function_name, int local_num)
 	string asm_cmd_push_arg = "@ARG\nD=M\n"+asm_cmd_push;
 	string asm_cmd_push_this = "@THIS\nD=M\n"+asm_cmd_push;
 	string asm_cmd_push_that = "@THAT\nD=M\n"+asm_cmd_push;
-	string asm_cmd_reset_arg = "@SP\nD=M\n@5\nD=D-A\n@"+to_string(local_num)+"\nD=D-A\n@ARG\nM=D\n";
-	string asm_cmd_reset_lcl = "@SP\nD=M\n@LCL\nM=D\n";
+	string asm_cmd_reset_arg = "";
+	string asm_cmd_reset_lcl = "";
+	if (function_name != "Sys.init")
+	{
+		asm_cmd_reset_arg = "@SP\nD=M\n@5\nD=D-A\n@"+to_string(local_num)+"\nD=D-A\n@ARG\nM=D\n";
+		asm_cmd_reset_lcl = "@SP\nD=M\n@LCL\nM=D\n";
+	}
 	string asm_cmd_goto_func = "@"+function_name+"\n0;JMP\n";
 	string asm_cmd_set_tag = "("+tag+")\n";
 	string asm_cmd = asm_cmd_push_ret_addr + asm_cmd_push_local + asm_cmd_push_arg + asm_cmd_push_this + asm_cmd_push_that + asm_cmd_reset_arg + asm_cmd_reset_lcl + asm_cmd_goto_func + asm_cmd_set_tag;
@@ -215,5 +220,5 @@ void CodeWriter::writeInit()
 {
 	string asm_cmd_set_sp = "@256\nD=A\n@SP\nM=D\n";
 	asm_file << asm_cmd_set_sp;
-	writeCall("Sys.init", 0); 
+	writeCall("Sys.init", 0);	
 }
