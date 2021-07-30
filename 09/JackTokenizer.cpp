@@ -1,6 +1,7 @@
 #include "JackTokenizer.h"
 
 JackTokenizer::JackTokenizer(string rawFileName)
+	:keywords{new unordered_set<string>}, symbols{new unordered_set<string>}
 {
 	fileName = str2Std(rawFileName);
 	try 
@@ -11,6 +12,8 @@ JackTokenizer::JackTokenizer(string rawFileName)
 	{
 		ifile.close();
 	}
+	keywords->insert({"class", "method", "int", "function", "boolean", "construtor", "char", "void", "var", "static", "field", "let", "do", "if", "else", "while", "return", "true", "false", "null", "this"});
+	symbols->insert({"{", "}", "(", ")", "[", "]", ".", ",", ";", "+", "-", "*", "/", "&", "|", "<", ">", "=", "~"});
 }
 
 JackTokenizer::~JackTokenizer()
@@ -65,6 +68,11 @@ void JackTokenizer::advance()
 		getline(ifile, str);
 	}
 	line = removeNoteInLine(str, "//");
+}
+
+TokenType JackTokenizer::tokenType()
+{
+	
 }
 
 //test 
