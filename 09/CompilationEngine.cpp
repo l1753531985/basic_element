@@ -3,11 +3,10 @@
 int main()
 {
 	JackTokenizer token{"./Main.jack"};
-	while (true)
+	while (token.hasMoreTokens())
 	{
-		if (!token.hasMoreTokens()) break;
 		token.advance();
-		cout << token.getLine() << endl; 
+		cout << token.getWord() << endl; 
 	}
 	return 0;
 }

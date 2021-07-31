@@ -13,7 +13,9 @@ class JackTokenizer {
 private:
 	string fileName;
 	ifstream ifile;
-	string line;
+	fstream file;
+	string words;
+	string word;
 	string str2Std(string);
 	unordered_set<string>* keywords;
 	unordered_set<string>* symbols;
@@ -27,7 +29,8 @@ public:
 	string identifier();
 	int intVal();
 	string stringVal();
+	void writeCodeToTmpFile();
 	~JackTokenizer();
 	//test
-	string getLine();
+	string getWord();
 };

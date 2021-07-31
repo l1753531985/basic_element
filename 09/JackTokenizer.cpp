@@ -4,14 +4,18 @@ JackTokenizer::JackTokenizer(string rawFileName)
 	:keywords{new unordered_set<string>}, symbols{new unordered_set<string>}
 {
 	fileName = str2Std(rawFileName);
+	string tmpFileName = "./tmpFile.jack";
 	try 
 	{
 		ifile.open(fileName);
+		file.open(tmpFileName, ios::in|ios::out);
 	} 
 	catch(...)
 	{
 		ifile.close();
+		file.close();
 	}
+	writeCodeToTmpFile();
 	keywords->insert({"class", "method", "int", "function", "boolean", "construtor", "char", "void", "var", "static", "field", "let", "do", "if", "else", "while", "return", "true", "false", "null", "this"});
 	symbols->insert({"{", "}", "(", ")", "[", "]", ".", ",", ";", "+", "-", "*", "/", "&", "|", "<", ">", "=", "~"});
 }
@@ -21,6 +25,7 @@ JackTokenizer::~JackTokenizer()
 	try 
 	{
 		ifile.close();
+		file.close();
 	} 
 	catch(...)
 	{
@@ -41,7 +46,7 @@ string JackTokenizer::str2Std(string rawStr)
 
 bool JackTokenizer::hasMoreTokens()
 {
-	return !(ifile.eof());
+	return (file.peek() == EOF) ? false : true;
 }
 
 string removeNoteInLine(string line, string identifier)
@@ -55,28 +60,47 @@ string removeNoteInLine(string line, string identifier)
 	int end_pos = line.size();
 	while (isspace(line[end_pos-1])) end_pos--;
 	line = line.substr(0, end_pos);
+	return line;
+}
+
+void JackTokenizer::writeCodeToTmpFile()
+{
+	string str = "";
+	while (getline(ifile, str))
+	{
+		//cout << "str: " << str << endl;
+		if (str.find("/*") != string::npos)
+		{
+			while (str.find("*/") == string::npos) 
+				getline(ifile, str);
+			getline(ifile, str);
+		}
+		str = removeNoteInLine(str, "//");
+		file << str;
+	}
+	file.clear();
+	file.seekp(0, ios::beg);
 }
 
 void JackTokenizer::advance()
 {
-	string str = "";
-	getline(ifile, str);
-	if (str.find("/*") != string::npos)
+	if (words.empty()) 
+		file >> words;
+	string tmp_word = "";
+	int signFlag = 0; 
+	while (signFlag < words.size())
 	{
-		while (str.find("*/") == string::npos) 
-			getline(ifile, str);
-		getline(ifile, str);
+		tmp_word += words[signFlag];
+		signFlag++;
+		if (ispunct(words[signFlag])) break;
+		if (ispunct(words[signFlag-1]) && isalnum(words[signFlag])) break;
 	}
-	line = removeNoteInLine(str, "//");
-}
-
-TokenType JackTokenizer::tokenType()
-{
-	
+	word = tmp_word;
+	words = words.substr(signFlag); 
 }
 
 //test 
-string JackTokenizer::getLine() 
+string JackTokenizer::getWord() 
 {
-	return line;
+	return word;
 }
