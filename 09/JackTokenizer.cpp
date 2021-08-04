@@ -1,7 +1,7 @@
 #include "JackTokenizer.h"
 
 JackTokenizer::JackTokenizer(string rawFileName)
-	:keywords{new unordered_set<string>}, symbols{new unordered_set<string>}
+	:keywords{new unordered_set<string>}, symbols{new unordered_set<string>}, isStringFlag{false}
 {
 	fileName = str2Std(rawFileName);
 	string tmpFileName = "./tmpFile.jack";
@@ -82,7 +82,7 @@ void JackTokenizer::writeCodeToTmpFile()
 	file.seekp(0, ios::beg);
 }
 
-void JackTokenizer::advance()
+string JackTokenizer::tokenStdAdvance()
 {
 	if (words.empty()) 
 		file >> words;
@@ -90,17 +90,30 @@ void JackTokenizer::advance()
 	int signFlag = 0; 
 	while (signFlag < words.size())
 	{
+		if (words[signFlag] == '"') isStringFlag = !isStringFlag; 
 		tmp_word += words[signFlag];
 		signFlag++;
 		if (ispunct(words[signFlag])) break;
 		if (ispunct(words[signFlag-1]) && isalnum(words[signFlag])) break;
 	}
-	word = tmp_word;
 	words = words.substr(signFlag); 
+	return tmp_word;
+}
+
+string JackTokenizer::tokenStringAdvance()
+{
+}
+
+void JackTokenizer::advance()
+{
+	if (isStringFlag)
+		advance_word = tokenStdAdvance();
+	else
+		advance_word = tokenStringAdvance();
 }
 
 //test 
 string JackTokenizer::getWord() 
 {
-	return word;
+	return advance_word;
 }

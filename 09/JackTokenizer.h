@@ -16,9 +16,13 @@ private:
 	fstream file;
 	string words;
 	string word;
+	string advance_word;
+	bool isStringFlag;
 	string str2Std(string);
 	unordered_set<string>* keywords;
 	unordered_set<string>* symbols;
+	string tokenStdAdvance();
+	string tokenStringAdvance();
 public:
 	JackTokenizer(string);
 	bool hasMoreTokens();
