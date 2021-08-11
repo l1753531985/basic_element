@@ -3,6 +3,9 @@
 #include <string>
 #include <iostream>
 #include <unordered_set>
+#include <sstream>
+#include <vector>
+#include <unistd.h>
 
 
 using namespace std;
@@ -14,11 +17,13 @@ private:
 	string fileName;
 	ifstream ifile;
 	fstream file;
-	string words;
-	string word;
+	string line;
 	string str2Std(string);
 	unordered_set<string>* keywords;
 	unordered_set<string>* symbols;
+	vector<string> line2words;
+	vector<string> words;
+	string getAWord();
 public:
 	JackTokenizer(string);
 	bool hasMoreTokens();

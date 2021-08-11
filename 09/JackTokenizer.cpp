@@ -76,16 +76,58 @@ void JackTokenizer::writeCodeToTmpFile()
 			getline(ifile, str);
 		}
 		str = removeNoteInLine(str, "//");
-		file << str;
+		file << str << endl;
 	}
 	file.clear();
 	file.seekp(0, ios::beg);
 }
 
+string JackTokenizer::getAWord()
+{
+	//cout << "size of vector: " << line2words.size() << endl;
+	if (line2words.empty()) 
+	{
+		const int charSize = 2; 
+		int realLength = 0; 
+		do { 
+			getline(file, line);
+			realLength = line.size()-2;
+			cout << "getline: " << line << endl;
+			cout << "size of getline: " << realLength << endl;
+		} while (realLength <= 0);
+		//cout << "line: " << line << endl;
+		//cout << "size of line: " << line.size() << endl;
+		stringstream aLine{line};
+		string word = "";
+		while (aLine >> word) line2words.push_back(word);
+	}	
+
+	if (words.empty())
+	{
+		string cur = line2words[0];
+		//cout << "cur: " << cur << endl;
+		string split = "";
+		for (char x : cur)
+		{
+			if (isalnum(x))
+				split += x;
+			else
+				split = x;	
+		}
+		words.push_back(split);
+		line2words.erase(line2words.begin());
+	}
+	
+	string ret = words[0];
+	words.erase(words.begin());
+	return ret; 
+}
+
 void JackTokenizer::advance()
 {
-	if (words.empty()) 
-		file >> words;
+	getAWord();
+	sleep(1);
+	/*
 	string tmp_word = "";
 	int signFlag = 0; 
 	while (signFlag < words.size())
@@ -97,10 +139,11 @@ void JackTokenizer::advance()
 	}
 	word = tmp_word;
 	words = words.substr(signFlag); 
+	*/
 }
 
 //test 
 string JackTokenizer::getWord() 
 {
-	return word;
+	return "";
 }
