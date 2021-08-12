@@ -17,6 +17,7 @@ private:
 	string fileName;
 	ifstream ifile;
 	fstream file;
+<<<<<<< HEAD
 	string line;
 	string str2Std(string);
 	unordered_set<string>* keywords;
