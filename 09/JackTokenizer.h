@@ -34,7 +34,7 @@ public:
 	string identifier();
 	int intVal();
 	string stringVal();
-	void writeCodeToTmpFile();
+	string getLineFromFile();
 	~JackTokenizer();
 	//test
 	string getWord();

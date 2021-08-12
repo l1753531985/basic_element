@@ -1,21 +1,17 @@
 #include "JackTokenizer.h"
 
 JackTokenizer::JackTokenizer(string rawFileName)
-	:keywords{new unordered_set<string>}, symbols{new unordered_set<string>}, isStringFlag{false}
+	:keywords{new unordered_set<string>}, symbols{new unordered_set<string>}
 {
 	fileName = str2Std(rawFileName);
-	string tmpFileName = "./tmpFile.jack";
 	try 
 	{
 		ifile.open(fileName);
-		file.open(tmpFileName, ios::in|ios::out);
 	} 
 	catch(...)
 	{
 		ifile.close();
-		file.close();
 	}
-	writeCodeToTmpFile();
 	keywords->insert({"class", "method", "int", "function", "boolean", "construtor", "char", "void", "var", "static", "field", "let", "do", "if", "else", "while", "return", "true", "false", "null", "this"});
 	symbols->insert({"{", "}", "(", ")", "[", "]", ".", ",", ";", "+", "-", "*", "/", "&", "|", "<", ">", "=", "~"});
 }
@@ -46,7 +42,7 @@ string JackTokenizer::str2Std(string rawStr)
 
 bool JackTokenizer::hasMoreTokens()
 {
-	return (file.peek() == EOF) ? false : true;
+	return !(file.eof());
 }
 
 string removeNoteInLine(string line, string identifier)
@@ -54,7 +50,7 @@ string removeNoteInLine(string line, string identifier)
 	int split_pos = line.find(identifier);
 	if (split_pos == 0)
 		return "";
-	if (split_pos < 0)
+	if (split_pos != string::npos)
 		return line;
 	line = line.substr(0, split_pos);
 	int end_pos = line.size();
@@ -63,7 +59,7 @@ string removeNoteInLine(string line, string identifier)
 	return line;
 }
 
-void JackTokenizer::writeCodeToTmpFile()
+string JackTokenizer::getLineFromFile()
 {
 	string str = "";
 	while (getline(ifile, str))
@@ -76,21 +72,21 @@ void JackTokenizer::writeCodeToTmpFile()
 			getline(ifile, str);
 		}
 		str = removeNoteInLine(str, "//");
-		file << str << endl;
+		if (str.size()) 
+			return str;
 	}
-	file.clear();
-	file.seekp(0, ios::beg);
 }
 
 string JackTokenizer::getAWord()
 {
-	//cout << "size of vector: " << line2words.size() << endl;
+	cout << "size of vector: " << line2words.size() << endl;
 	if (line2words.empty()) 
 	{
+		line = getLineFromFile();
+		cout << "line: " << line << endl;
 		const int charSize = 2; 
 		int realLength = 0; 
 		do { 
-			getline(file, line);
 			realLength = line.size()-2;
 			cout << "getline: " << line << endl;
 			cout << "size of getline: " << realLength << endl;
@@ -125,8 +121,9 @@ string JackTokenizer::getAWord()
 
 void JackTokenizer::advance()
 {
+	cout << "in advance" << endl;
 	getAWord();
-	sleep(1);
+	//sleep(1);
 	/*
 	string tmp_word = "";
 	int signFlag = 0; 
