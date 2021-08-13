@@ -17,15 +17,15 @@ class JackTokenizer {
 private:
 	string fileName;
 	ifstream ifile;
-	fstream file;
 	string line;
 	bool isFileEnd;
-	string str2Std(string);
 	unordered_set<string>* keywords;
 	unordered_set<string>* symbols;
 	queue<string> line2words;
 	queue<string> words;
+	string str2Std(string);
 	string getAToken();
+	void lineSplitIntoWords();
 public:
 	JackTokenizer(string);
 	bool hasMoreTokens();

@@ -76,14 +76,14 @@ string JackTokenizer::getLineFromFile()
 	}
 }
 
-string JackTokenizer::getAToken()
+void JackTokenizer::lineSplitIntoWords()
 {
-	//split line into word
+	//split line into words
 	//cout << "size of vector: " << line2words.size() << endl;
+	if (!hasMoreTokens()) return;
 	if (line2words.empty()) 
 	{
 		line = getLineFromFile();
-		if (line.empty()) return "";
 		//cout << "line: " << line << endl;
 		//cout << "size of line: " << line.size() << endl;
 		//sleep(1);
@@ -91,12 +91,17 @@ string JackTokenizer::getAToken()
 		string word = "";
 		while (aLine >> word) line2words.push(word);
 	}	
+}
 
+string JackTokenizer::getAToken()
+{
+	lineSplitIntoWords();
 	// split word into token 
+	if (!hasMoreTokens()) return "";
 	if (words.empty())
 	{
 		string cur = line2words.front();
-		//cout << "cur: " << cur << endl;
+		cout << "cur: " << cur << endl;
 		string split = "";
 		for (char x : cur)
 		{
@@ -114,7 +119,7 @@ string JackTokenizer::getAToken()
 		line2words.pop();
 	}
 	string ret = words.front();
-	cout << "ret: " << ret << endl;
+	//cout << "ret: " << ret << endl;
 	words.pop();
 	return ret; 
 }
