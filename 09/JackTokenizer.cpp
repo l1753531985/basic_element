@@ -76,11 +76,10 @@ string JackTokenizer::getLineFromFile()
 	}
 }
 
+//split line into words
 void JackTokenizer::lineSplitIntoWords()
 {
-	//split line into words
 	//cout << "size of vector: " << line2words.size() << endl;
-	if (!hasMoreTokens()) return;
 	if (line2words.empty()) 
 	{
 		line = getLineFromFile();
@@ -93,15 +92,13 @@ void JackTokenizer::lineSplitIntoWords()
 	}	
 }
 
-string JackTokenizer::getAToken()
+// split word into tokens 
+void JackTokenizer::wordSplitIntoTokens() 
 {
-	lineSplitIntoWords();
-	// split word into token 
-	if (!hasMoreTokens()) return "";
 	if (words.empty())
 	{
 		string cur = line2words.front();
-		cout << "cur: " << cur << endl;
+		//cout << "cur: " << cur << endl;
 		string split = "";
 		for (char x : cur)
 		{
@@ -118,33 +115,21 @@ string JackTokenizer::getAToken()
 		words.push(split);
 		line2words.pop();
 	}
-	string ret = words.front();
-	//cout << "ret: " << ret << endl;
-	words.pop();
-	return ret; 
 }
 
 void JackTokenizer::advance()
 {
-	getAToken();
+	lineSplitIntoWords();
+	if (!hasMoreTokens()) return;
+	wordSplitIntoTokens();
+	token = words.front();
+	//cout << "token: " << token << endl;
+	words.pop();
 	//sleep(1);
-	/*
-	string tmp_word = "";
-	int signFlag = 0; 
-	while (signFlag < words.size())
-	{
-		if (words[signFlag] == '"') isStringFlag = !isStringFlag; 
-		tmp_word += words[signFlag];
-		signFlag++;
-		if (ispunct(words[signFlag])) break;
-		if (ispunct(words[signFlag-1]) && isalnum(words[signFlag])) break;
-	}
-	words = words.substr(signFlag); 
-	*/
 }
 
 //test 
 string JackTokenizer::getWord() 
 {
-	return "";
+	return token;
 }

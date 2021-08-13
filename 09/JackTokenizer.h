@@ -19,6 +19,7 @@ private:
 	ifstream ifile;
 	string line;
 	bool isFileEnd;
+	string token;
 	unordered_set<string>* keywords;
 	unordered_set<string>* symbols;
 	queue<string> line2words;
@@ -26,6 +27,7 @@ private:
 	string str2Std(string);
 	string getAToken();
 	void lineSplitIntoWords();
+	void wordSplitIntoTokens();
 public:
 	JackTokenizer(string);
 	bool hasMoreTokens();
