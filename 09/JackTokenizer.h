@@ -25,7 +25,6 @@ private:
 	queue<string> line2words;
 	queue<string> words;
 	string str2Std(string);
-	string getAToken();
 	void lineSplitIntoWords();
 	void wordSplitIntoTokens();
 public:

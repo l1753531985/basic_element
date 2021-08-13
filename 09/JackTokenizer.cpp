@@ -99,20 +99,21 @@ void JackTokenizer::wordSplitIntoTokens()
 	{
 		string cur = line2words.front();
 		//cout << "cur: " << cur << endl;
-		string split = "";
+		string new_cur = "";
 		for (char x : cur)
 		{
-			if (ispunct(x) && !split.empty())
+			if (ispunct(x)) 
 			{
-				words.push(split); 
-				string tmp{1,x};
-				words.push(tmp);
-				split.clear();
-				continue;
+				string tmp{1, x};
+				new_cur += " " + tmp + " ";
 			}
-			split += x;
+			else
+				new_cur += x;
 		}
-		words.push(split);
+		stringstream rawTokens{new_cur};
+		string real_token = "";
+		while (rawTokens >> real_token)
+			words.push(real_token);
 		line2words.pop();
 	}
 }
@@ -123,8 +124,8 @@ void JackTokenizer::advance()
 	if (!hasMoreTokens()) return;
 	wordSplitIntoTokens();
 	token = words.front();
-	//cout << "token: " << token << endl;
 	words.pop();
+	cout << "token: " << token << endl;
 	//sleep(1);
 }
 
