@@ -13,6 +13,8 @@ using namespace std;
 
 enum TokenType {KEYWORD, SYMBOL, IDENTIFIER, INT_CONST, STRING_CONST};
 
+enum Status {STRSTART, STREND, NOTSTRING};
+
 class JackTokenizer {
 private:
 	string fileName;
@@ -20,6 +22,7 @@ private:
 	string line;
 	bool isFileEnd;
 	string token;
+	Status statusStrGet;
 	unordered_set<string>* keywords;
 	unordered_set<string>* symbols;
 	queue<string> line2words;
@@ -27,6 +30,7 @@ private:
 	string str2Std(string);
 	void lineSplitIntoWords();
 	void wordSplitIntoTokens();
+	void nextToken();
 public:
 	JackTokenizer(string);
 	bool hasMoreTokens();

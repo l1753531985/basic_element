@@ -1,7 +1,7 @@
 #include "JackTokenizer.h"
 
 JackTokenizer::JackTokenizer(string rawFileName)
-	:keywords{new unordered_set<string>}, symbols{new unordered_set<string>}, isFileEnd{false}
+	:keywords{new unordered_set<string>}, symbols{new unordered_set<string>}, isFileEnd{false}, statusStrGet{Status::NOTSTRING}
 {
 	fileName = str2Std(rawFileName);
 	try 
@@ -118,13 +118,39 @@ void JackTokenizer::wordSplitIntoTokens()
 	}
 }
 
+void JackTokenizer::nextToken()
+{
+	if (statusStrGet == Status::STRSTART) 
+	{
+		while (words.front().find('"') == string::npos)	
+		{
+			token += words.front();
+			words.pop();
+		}
+	}
+	else
+	{
+		token = words.front();
+		words.pop();
+	}
+
+	if (token.find('"') != string::npos)
+	{
+		if (statusStrGet == Status::NOTSTRING)
+			statusStrGet = Status::STRSTART;
+		else if (statusStrGet == Status::STRSTART)
+			statusStrGet = Status::STREND;
+	}
+	else if (statusStrGet == Status::STREND)
+		statusStrGet = Status::NOTSTRING;
+}
+
 void JackTokenizer::advance()
 {
 	lineSplitIntoWords();
 	if (!hasMoreTokens()) return;
 	wordSplitIntoTokens();
-	token = words.front();
-	words.pop();
+	nextToken();
 	cout << "token: " << token << endl;
 	//sleep(1);
 }
