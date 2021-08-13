@@ -74,6 +74,7 @@ string JackTokenizer::getLineFromFile()
 		str = removeNoteInLine(str, "//");
 		if (str.size()) return str;
 	}
+	return "";
 }
 
 //split line into words
@@ -108,7 +109,7 @@ void JackTokenizer::wordSplitIntoTokens()
 				new_cur += " " + tmp + " ";
 			}
 			else
-				new_cur += x;
+				new_cur += x; 
 		}
 		stringstream rawTokens{new_cur};
 		string real_token = "";
@@ -120,12 +121,14 @@ void JackTokenizer::wordSplitIntoTokens()
 
 void JackTokenizer::nextToken()
 {
+	token.clear();
 	if (statusStrGet == Status::STRSTART) 
 	{
 		while (words.front().find('"') == string::npos)	
 		{
-			token += words.front();
+			token += words.front() + " ";
 			words.pop();
+			if (words.empty()) wordSplitIntoTokens();
 		}
 	}
 	else
@@ -134,15 +137,16 @@ void JackTokenizer::nextToken()
 		words.pop();
 	}
 
-	if (token.find('"') != string::npos)
+	if (statusStrGet == Status::STRSTART)
+		statusStrGet = Status::STREND;
+	// cout << "token: " << token << endl;
+	if (token.find('"') != string::npos) 
 	{
 		if (statusStrGet == Status::NOTSTRING)
 			statusStrGet = Status::STRSTART;
-		else if (statusStrGet == Status::STRSTART)
-			statusStrGet = Status::STREND;
+		else
+			statusStrGet = Status::NOTSTRING;
 	}
-	else if (statusStrGet == Status::STREND)
-		statusStrGet = Status::NOTSTRING;
 }
 
 void JackTokenizer::advance()
@@ -151,7 +155,6 @@ void JackTokenizer::advance()
 	if (!hasMoreTokens()) return;
 	wordSplitIntoTokens();
 	nextToken();
-	cout << "token: " << token << endl;
 	//sleep(1);
 }
 
