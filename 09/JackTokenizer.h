@@ -5,6 +5,7 @@
 #include <unordered_set>
 #include <sstream>
 #include <vector>
+#include <queue>
 #include <unistd.h>
 
 
@@ -18,12 +19,13 @@ private:
 	ifstream ifile;
 	fstream file;
 	string line;
+	bool isFileEnd;
 	string str2Std(string);
 	unordered_set<string>* keywords;
 	unordered_set<string>* symbols;
-	vector<string> line2words;
-	vector<string> words;
-	string getAWord();
+	queue<string> line2words;
+	queue<string> words;
+	string getAToken();
 public:
 	JackTokenizer(string);
 	bool hasMoreTokens();

@@ -3,10 +3,10 @@
 int main()
 {
 	JackTokenizer token{"./Main.jack"};
-	while (token.hasMoreTokens())
+	while (true)
 	{
-		cout << "in while branch in main!!!!!" << endl;
-		//token.advance();
+		if (!token.hasMoreTokens()) break;
+		token.advance();
 		//cout << token.getWord() << endl; 
 	}
 	return 0;

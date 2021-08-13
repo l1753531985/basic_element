@@ -1,7 +1,7 @@
 #include "JackTokenizer.h"
 
 JackTokenizer::JackTokenizer(string rawFileName)
-	:keywords{new unordered_set<string>}, symbols{new unordered_set<string>}
+	:keywords{new unordered_set<string>}, symbols{new unordered_set<string>}, isFileEnd{false}
 {
 	fileName = str2Std(rawFileName);
 	try 
@@ -21,7 +21,6 @@ JackTokenizer::~JackTokenizer()
 	try 
 	{
 		ifile.close();
-		file.close();
 	} 
 	catch(...)
 	{
@@ -42,7 +41,7 @@ string JackTokenizer::str2Std(string rawStr)
 
 bool JackTokenizer::hasMoreTokens()
 {
-	return !(file.eof());
+	return !isFileEnd;
 }
 
 string removeNoteInLine(string line, string identifier)
@@ -59,12 +58,13 @@ string removeNoteInLine(string line, string identifier)
 	return line;
 }
 
+//remove note line
 string JackTokenizer::getLineFromFile()
 {
 	string str = "";
+	if (ifile.peek() == EOF) isFileEnd = true;
 	while (getline(ifile, str))
 	{
-		//cout << "str: " << str << endl;
 		if (str.find("/*") != string::npos)
 		{
 			while (str.find("*/") == string::npos) 
@@ -72,57 +72,56 @@ string JackTokenizer::getLineFromFile()
 			getline(ifile, str);
 		}
 		str = removeNoteInLine(str, "//");
-		if (str.size()) 
-			return str;
+		if (str.size()) return str;
 	}
 }
 
-string JackTokenizer::getAWord()
+string JackTokenizer::getAToken()
 {
-	cout << "size of vector: " << line2words.size() << endl;
+	//split line into word
+	//cout << "size of vector: " << line2words.size() << endl;
 	if (line2words.empty()) 
 	{
 		line = getLineFromFile();
-		cout << "line: " << line << endl;
-		const int charSize = 2; 
-		int realLength = 0; 
-		do { 
-			realLength = line.size()-2;
-			cout << "getline: " << line << endl;
-			cout << "size of getline: " << realLength << endl;
-		} while (realLength <= 0);
+		if (line.empty()) return "";
 		//cout << "line: " << line << endl;
 		//cout << "size of line: " << line.size() << endl;
+		//sleep(1);
 		stringstream aLine{line};
 		string word = "";
-		while (aLine >> word) line2words.push_back(word);
+		while (aLine >> word) line2words.push(word);
 	}	
 
+	// split word into token 
 	if (words.empty())
 	{
-		string cur = line2words[0];
+		string cur = line2words.front();
 		//cout << "cur: " << cur << endl;
 		string split = "";
 		for (char x : cur)
 		{
-			if (isalnum(x))
-				split += x;
-			else
-				split = x;	
+			if (ispunct(x) && !split.empty())
+			{
+				words.push(split); 
+				string tmp{1,x};
+				words.push(tmp);
+				split.clear();
+				continue;
+			}
+			split += x;
 		}
-		words.push_back(split);
-		line2words.erase(line2words.begin());
+		words.push(split);
+		line2words.pop();
 	}
-	
-	string ret = words[0];
-	words.erase(words.begin());
+	string ret = words.front();
+	cout << "ret: " << ret << endl;
+	words.pop();
 	return ret; 
 }
 
 void JackTokenizer::advance()
 {
-	cout << "in advance" << endl;
-	getAWord();
+	getAToken();
 	//sleep(1);
 	/*
 	string tmp_word = "";
