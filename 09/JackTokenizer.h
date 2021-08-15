@@ -1,4 +1,5 @@
-#pragma once
+#ifndef JackTokenizer_H
+#define JackTokenizer_H
 #include <fstream>
 #include <string>
 #include <iostream>
@@ -45,4 +46,7 @@ public:
 	~JackTokenizer();
 	//test
 	string getWord();
+	string type2Str(TokenType);
 };
+
+#endif

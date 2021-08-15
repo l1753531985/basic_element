@@ -6,7 +6,8 @@ int main()
 	while (token.hasMoreTokens())
 	{
 		token.advance();
-		cout << token.getWord() << endl; 
+		cout << token.type2Str(token.tokenType()) << endl;
+		//cout << token.getWord() << endl; 
 	}
 	return 0;
 }

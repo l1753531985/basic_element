@@ -139,7 +139,7 @@ void JackTokenizer::nextToken()
 
 	if (statusStrGet == Status::STRSTART)
 		statusStrGet = Status::STREND;
-	// cout << "token: " << token << endl;
+	//cout << "token: " << token << endl;
 	if (token.find('"') != string::npos) 
 	{
 		if (statusStrGet == Status::NOTSTRING)
@@ -155,11 +155,48 @@ void JackTokenizer::advance()
 	if (!hasMoreTokens()) return;
 	wordSplitIntoTokens();
 	nextToken();
+	//cout << token << endl;
 	//sleep(1);
+}
+
+
+TokenType JackTokenizer::tokenType()
+{
+	cout << token << endl;
+	cout << "size of toke: " << token.size() << endl;
+	if (keywords->find(token) != keywords->end())
+		return TokenType::KEYWORD; 
+	else if (symbols->find(token) != symbols->end())
+		return TokenType::SYMBOL;
+	else if (token.find('"') != string::npos)
+		return TokenType::STRING_CONST;
+	else 
+	{
+		for (char x : token)
+			if (isalpha(x))
+				return TokenType::IDENTIFIER;
+		return TokenType::INT_CONST;
+	}
 }
 
 //test 
 string JackTokenizer::getWord() 
 {
 	return token;
+}
+
+string JackTokenizer::type2Str(TokenType type)
+{
+	if (type == TokenType::KEYWORD)
+		return "keyword";
+	else if (type == TokenType::SYMBOL)
+		return "symbol";
+	else if (type == TokenType::IDENTIFIER)
+		return "identifier";
+	else if (type == TokenType::INT_CONST)
+		return "int_const";
+	else if (type == TokenType::STRING_CONST)
+		return "string_const";
+	else
+		return "not any type";
 }
