@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include <unordered_set>
+#include <unordered_map>
 #include <sstream>
 #include <vector>
 #include <queue>
@@ -32,6 +33,7 @@ private:
 	void lineSplitIntoWords();
 	void wordSplitIntoTokens();
 	void nextToken();
+	void token2StdChar();
 public:
 	JackTokenizer(string);
 	bool hasMoreTokens();

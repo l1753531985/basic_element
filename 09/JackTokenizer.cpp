@@ -159,11 +159,20 @@ void JackTokenizer::advance()
 	//sleep(1);
 }
 
+void JackTokenizer::token2StdChar()
+{
+	for (unordered_set<string>::iterator iter = symbols->begin(); iter != symbols->end(); iter++)
+		if (token.find(*iter) != string::npos)
+		{
+			token = *iter;
+			return;
+		}
+}
 
 TokenType JackTokenizer::tokenType()
 {
 	cout << token << endl;
-	cout << "size of toke: " << token.size() << endl;
+	token2StdChar();
 	if (keywords->find(token) != keywords->end())
 		return TokenType::KEYWORD; 
 	else if (symbols->find(token) != symbols->end())
@@ -173,7 +182,7 @@ TokenType JackTokenizer::tokenType()
 	else 
 	{
 		for (char x : token)
-			if (isalpha(x))
+			if (!isdigit(x))
 				return TokenType::IDENTIFIER;
 		return TokenType::INT_CONST;
 	}
