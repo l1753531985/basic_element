@@ -155,6 +155,7 @@ void JackTokenizer::advance()
 	if (!hasMoreTokens()) return;
 	wordSplitIntoTokens();
 	nextToken();
+	token2StdChar();
 	//cout << token << endl;
 	//sleep(1);
 }
@@ -171,8 +172,7 @@ void JackTokenizer::token2StdChar()
 
 TokenType JackTokenizer::tokenType()
 {
-	cout << token << endl;
-	token2StdChar();
+	//cout << token << endl;
 	if (keywords->find(token) != keywords->end())
 		return TokenType::KEYWORD; 
 	else if (symbols->find(token) != symbols->end())
@@ -186,6 +186,26 @@ TokenType JackTokenizer::tokenType()
 				return TokenType::IDENTIFIER;
 		return TokenType::INT_CONST;
 	}
+}
+
+string JackTokenizer::keyword()
+{ return token; }
+
+string JackTokenizer::symbol()
+{ return token; }
+
+string JackTokenizer::identifier()
+{ return token; }
+
+int JackTokenizer::intVal()
+{ return atoi(token.c_str()); }
+
+string JackTokenizer::stringVal()
+{
+	advance();
+	string tmp = token;
+	advance();
+	return tmp;
 }
 
 //test 

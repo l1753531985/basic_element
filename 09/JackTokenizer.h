@@ -40,7 +40,7 @@ public:
 	void advance();
 	TokenType tokenType();
 	string keyword();
-	char symbol();
+	string symbol();
 	string identifier();
 	int intVal();
 	string stringVal();
