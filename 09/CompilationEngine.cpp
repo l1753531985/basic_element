@@ -4,9 +4,10 @@ template <typename stream>
 void process(stream& stm)
 {
 	JackTokenizer token{"./Main.jack"};
-	stm << "<token>" << endl;
+	stm << "<tokens>" << endl;
 	while (token.hasMoreTokens())
 	{
+		//stm << token.getWord() << endl;
 		token.advance();
 		switch (token.tokenType())
 		{
@@ -33,7 +34,7 @@ void process(stream& stm)
 		//stm << token.type2Str(token.tokenType()) << endl;
 		//stm << token.getWord() << endl; 
 	}
-	stm << "</token>" << endl;
+	stm << "</tokens>" << endl;
 }
 
 int main()

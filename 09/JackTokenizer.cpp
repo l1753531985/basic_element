@@ -41,7 +41,7 @@ string JackTokenizer::str2Std(string rawStr)
 
 bool JackTokenizer::hasMoreTokens()
 {
-	return !isFileEnd;
+	return !(ifile.peek() == EOF); 
 }
 
 string removeNoteInLine(string line, string identifier)
@@ -62,7 +62,6 @@ string removeNoteInLine(string line, string identifier)
 string JackTokenizer::getLineFromFile()
 {
 	string str = "";
-	if (ifile.peek() == EOF) isFileEnd = true;
 	while (getline(ifile, str))
 	{
 		if (str.find("/*") != string::npos)
@@ -126,7 +125,7 @@ void JackTokenizer::nextToken()
 	{
 		while (words.front().find('"') == string::npos)	
 		{
-			token += words.front() + " ";
+			token += str2Std(words.front()) + " ";
 			words.pop();
 			if (words.empty()) wordSplitIntoTokens();
 		}
