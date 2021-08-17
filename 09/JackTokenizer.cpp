@@ -192,7 +192,12 @@ string JackTokenizer::keyword()
 { return token; }
 
 string JackTokenizer::symbol()
-{ return token; }
+{ 
+	if (token == ">") return "&gt;";
+	else if (token == "<") return "&lt;";
+	else if (token == "&") return "&amp";
+	else return token; 
+}
 
 string JackTokenizer::identifier()
 { return token; }
