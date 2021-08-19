@@ -41,5 +41,6 @@ int main()
 {
 	ofstream ofile{"/root/basic_elements_projects/projects/09/test.xml"};
 	process(ofile);
+	ofile.close();
 	return 0;
 }

@@ -6,7 +6,6 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <sstream>
-#include <vector>
 #include <queue>
 #include <unistd.h>
 
@@ -15,21 +14,22 @@ using namespace std;
 
 enum TokenType {KEYWORD, SYMBOL, IDENTIFIER, INT_CONST, STRING_CONST};
 
-enum Status {STRSTART, STREND, NOTSTRING};
+enum Status {STRSTART, STREND};
 
 class JackTokenizer {
 private:
 	string fileName;
 	ifstream ifile;
 	string line;
-	bool isFileEnd;
 	string token;
-	Status statusStrGet;
 	unordered_set<string>* keywords;
 	unordered_set<string>* symbols;
-	queue<string> line2words;
-	queue<string> words;
+	queue<string>* lines;
+	queue<string>* line2words;
+	queue<string>* words;
+	queue<string> stringBuffer;
 	string str2Std(string);
+	void getLineFromFile();
 	void lineSplitIntoWords();
 	void wordSplitIntoTokens();
 	void nextToken();
@@ -44,7 +44,6 @@ public:
 	string identifier();
 	int intVal();
 	string stringVal();
-	string getLineFromFile();
 	~JackTokenizer();
 	//test
 	string getWord();

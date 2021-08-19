@@ -1,7 +1,7 @@
 #include "JackTokenizer.h"
 
 JackTokenizer::JackTokenizer(string rawFileName)
-	:keywords{new unordered_set<string>}, symbols{new unordered_set<string>}, isFileEnd{false}, statusStrGet{Status::NOTSTRING}
+	:keywords{new unordered_set<string>}, symbols{new unordered_set<string>}, line2words{new queue<string>}, words{new queue<string>}, lines{new queue<string>}, token{""}
 {
 	fileName = str2Std(rawFileName);
 	try 
@@ -14,6 +14,9 @@ JackTokenizer::JackTokenizer(string rawFileName)
 	}
 	keywords->insert({"class", "method", "int", "function", "boolean", "construtor", "char", "void", "var", "static", "field", "let", "do", "if", "else", "while", "return", "true", "false", "null", "this"});
 	symbols->insert({"{", "}", "(", ")", "[", "]", ".", ",", ";", "+", "-", "*", "/", "&", "|", "<", ">", "=", "~"});
+	getLineFromFile();
+	lineSplitIntoWords();
+	wordSplitIntoTokens();
 }
 
 JackTokenizer::~JackTokenizer()
@@ -26,6 +29,11 @@ JackTokenizer::~JackTokenizer()
 	{
 		cerr << "The file can not be closed!";
 	}
+	delete keywords;
+	delete symbols;
+	delete lines;
+	delete line2words;
+	delete words;
 }
 
 string JackTokenizer::str2Std(string rawStr)
@@ -41,7 +49,7 @@ string JackTokenizer::str2Std(string rawStr)
 
 bool JackTokenizer::hasMoreTokens()
 {
-	return !(ifile.peek() == EOF); 
+	return !(words->empty()); 
 }
 
 string removeNoteInLine(string line, string identifier)
@@ -49,7 +57,7 @@ string removeNoteInLine(string line, string identifier)
 	int split_pos = line.find(identifier);
 	if (split_pos == 0)
 		return "";
-	if (split_pos != string::npos)
+	if (split_pos == string::npos)
 		return line;
 	line = line.substr(0, split_pos);
 	int end_pos = line.size();
@@ -59,8 +67,9 @@ string removeNoteInLine(string line, string identifier)
 }
 
 //remove note line
-string JackTokenizer::getLineFromFile()
+void JackTokenizer::getLineFromFile()
 {
+	const int minLineSize = 1;
 	string str = "";
 	while (getline(ifile, str))
 	{
@@ -71,33 +80,33 @@ string JackTokenizer::getLineFromFile()
 			getline(ifile, str);
 		}
 		str = removeNoteInLine(str, "//");
-		if (str.size()) return str;
+		if (str.size() > minLineSize) lines->push(str);
 	}
-	return "";
 }
 
 //split line into words
 void JackTokenizer::lineSplitIntoWords()
 {
-	//cout << "size of vector: " << line2words.size() << endl;
-	if (line2words.empty()) 
+	//cout << "size of lines: " << lines->size() << endl;
+	while (!lines->empty()) 
 	{
-		line = getLineFromFile();
+		line = lines->front();
 		//cout << "line: " << line << endl;
 		//cout << "size of line: " << line.size() << endl;
 		//sleep(1);
+		lines->pop();
 		stringstream aLine{line};
 		string word = "";
-		while (aLine >> word) line2words.push(word);
+		while (aLine >> word) line2words->push(word);
 	}	
 }
 
 // split word into tokens 
 void JackTokenizer::wordSplitIntoTokens() 
 {
-	if (words.empty())
+	while (!line2words->empty())
 	{
-		string cur = line2words.front();
+		string cur = line2words->front();
 		//cout << "cur: " << cur << endl;
 		string new_cur = "";
 		for (char x : cur)
@@ -110,52 +119,50 @@ void JackTokenizer::wordSplitIntoTokens()
 			else
 				new_cur += x; 
 		}
+		//cout << "new_cur: " << new_cur << endl;
+		//cout << "after size: " << new_cur.size() << endl;
 		stringstream rawTokens{new_cur};
 		string real_token = "";
-		while (rawTokens >> real_token)
-			words.push(real_token);
-		line2words.pop();
+		while (rawTokens >> real_token) words->push(real_token);
+		line2words->pop();
 	}
 }
 
 void JackTokenizer::nextToken()
 {
-	token.clear();
-	if (statusStrGet == Status::STRSTART) 
-	{
-		while (words.front().find('"') == string::npos)	
-		{
-			token += str2Std(words.front()) + " ";
-			words.pop();
-			if (words.empty()) wordSplitIntoTokens();
-		}
+	if (words->empty()) return;
+	stringBuffer.push(words->front());
+	words->pop();
+	if (stringBuffer.front().find('"') != string::npos)
+	{  
+		do {
+			stringBuffer.push(words->front());
+			words->pop();
+		} while (stringBuffer.back().find('"') == string::npos);
 	}
-	else
-	{
-		token = words.front();
-		words.pop();
-	}
+	//cout << "size of buffer: " << stringBuffer.size() << endl;
 
-	if (statusStrGet == Status::STRSTART)
-		statusStrGet = Status::STREND;
-	//cout << "token: " << token << endl;
-	if (token.find('"') != string::npos) 
+	if (stringBuffer.size() == 1) 
 	{
-		if (statusStrGet == Status::NOTSTRING)
-			statusStrGet = Status::STRSTART;
-		else
-			statusStrGet = Status::NOTSTRING;
+		token = stringBuffer.front();
+		stringBuffer.pop();
+	}
+	else 
+	{
+		token.clear();	
+		while (!stringBuffer.empty()) 
+		{
+			token += stringBuffer.front() + " ";
+			stringBuffer.pop();
+		}
 	}
 }
 
 void JackTokenizer::advance()
 {
-	lineSplitIntoWords();
-	if (!hasMoreTokens()) return;
-	wordSplitIntoTokens();
 	nextToken();
 	token2StdChar();
-	//cout << token << endl;
+	//cout << "token: "<< token << endl;
 	//sleep(1);
 }
 
@@ -206,10 +213,9 @@ int JackTokenizer::intVal()
 
 string JackTokenizer::stringVal()
 {
-	advance();
-	string tmp = token;
-	advance();
-	return tmp;
+	int indexStart = token.find('"')+1;
+	int length = token.rfind('"') - indexStart;
+	return token.substr(indexStart, length);
 }
 
 //test 
