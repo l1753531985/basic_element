@@ -12,7 +12,7 @@ JackTokenizer::JackTokenizer(string rawFileName)
 	{
 		ifile.close();
 	}
-	keywords->insert({"class", "method", "int", "function", "boolean", "construtor", "char", "void", "var", "static", "field", "let", "do", "if", "else", "while", "return", "true", "false", "null", "this"});
+	keywords->insert({"class", "method", "int", "function", "boolean", "constructor", "char", "void", "var", "static", "field", "let", "do", "if", "else", "while", "return", "true", "false", "null", "this"});
 	symbols->insert({"{", "}", "(", ")", "[", "]", ".", ",", ";", "+", "-", "*", "/", "&", "|", "<", ">", "=", "~"});
 	getLineFromFile();
 	lineSplitIntoWords();
@@ -69,7 +69,6 @@ string removeNoteInLine(string line, string identifier)
 //remove note line
 void JackTokenizer::getLineFromFile()
 {
-	const int minLineSize = 1;
 	string str = "";
 	while (getline(ifile, str))
 	{
@@ -80,7 +79,7 @@ void JackTokenizer::getLineFromFile()
 			getline(ifile, str);
 		}
 		str = removeNoteInLine(str, "//");
-		if (str.size() > minLineSize) lines->push(str);
+		if (!str.empty()) lines->push(str);
 	}
 }
 
@@ -201,7 +200,7 @@ string JackTokenizer::symbol()
 { 
 	if (token == ">") return "&gt;";
 	else if (token == "<") return "&lt;";
-	else if (token == "&") return "&amp";
+	else if (token == "&") return "&amp;";
 	else return token; 
 }
 
