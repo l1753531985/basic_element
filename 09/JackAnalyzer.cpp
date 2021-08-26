@@ -1,49 +1,55 @@
+#include <queue>
 #include "JackTokenizer.h"
 #include "CompilationEngine.h"
 
-template <typename stream>
-void process(stream& stm)
+void process(queue<pair<string, string>>& q)
 {
-	CompilationEngine ce;
 	JackTokenizer token{"./Main.jack"};
-	stm << "<tokens>" << endl;
 	while (token.hasMoreTokens())
 	{
 		//stm << token.getWord() << endl;
 		token.advance();
+		string tag = "", singleToken = "";
 		switch (token.tokenType())
 		{
 			case TokenType::KEYWORD:
-				stm << "<keyword> " << token.keyword() << " </keyword>" << endl;
+				tag = "keyword";	
+				singleToken = token.keyword();
 				break;
 			case TokenType::SYMBOL:
-				stm << "<symbol> " << token.symbol() << " </symbol>" << endl;
+				tag = "symbol";	
+				singleToken = token.symbol();
 				break;
 			case TokenType::IDENTIFIER:
-				stm << "<identifier> " << token.identifier() << " </identifier>" << endl;
+				tag = "identifier";	
+				singleToken = token.identifier();
 				break;
 			case TokenType::INT_CONST:
-				stm << "<integerConstant> " << token.intVal() << " </integerConstant>" << endl;
+				tag = "integerConstant";	
+				singleToken = token.intVal();
 				break;
 			case TokenType::STRING_CONST:
-				stm << "<stringConstant> " << token.stringVal() << " </stringConstant>" << endl;
+				tag = "stringConstant";	
+				singleToken = token.stringVal();
 				break;
 			default:
-				stm << "No any token type" << endl;
+				tag = "";
+				singleToken = "";
 				break;
 
 		}
+		pair<string, string> p{tag, singleToken};
+		q.push(p);
 		//stm << token.type2Str(token.tokenType()) << endl;
 		//stm << token.getWord() << endl; 
 	}
-	stm << "</tokens>" << endl;
 }
 
 int main()
 {
-	ofstream ofile{"/root/basic_elements_projects/projects/09/test.xml"};
-	//stringstream sst;	
-	process(ofile);
-	ofile.close();
+	queue<pair<string, string>> tokens;
+	process(tokens);
+	CompilationEngine ce{tokens};
+	//ce.printAllTokens();
 	return 0;
 }
