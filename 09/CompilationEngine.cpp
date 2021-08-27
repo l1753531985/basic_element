@@ -10,31 +10,14 @@ CompilationEngine::CompilationEngine(const queue<pair<string, string>>& tokens)
 
 CompilationEngine::~CompilationEngine()
 {
+	delete keyword2Type;
 }
 
-void CompilationEngine::printAllTokens()
-{
-	while (!tokens.empty())
-	{
-		cout << tokens.front().first << ": " << tokens.front().second << endl;
-		tokens.pop();
-	}
-}
 
 void CompilationEngine::CompileClass(ostream& os)
 {
 	os << "<class>"<< endl;
-	bool keepLoop = true;
-	while (keepLoop)
-	{
-		os << "<" << tokens.front().first << ">";
-		os << " " << tokens.front().second << " ";  	
-		os << "</" << tokens.front().first << ">" << endl;
-		if (tokens.front().second == "{") keepLoop = false;
-		tokens.pop();
-	}
-
-	//scan next to the character '{'
+	advanceUntilFlag(os, "{");
 	switch (keyword2Type->find(tokens.front().second)->second)
 	{
 		case CompilationType::SUBROUTINEDEC:
@@ -43,51 +26,26 @@ void CompilationEngine::CompileClass(ostream& os)
 		default:
 			break;
 	}
-
-	// push character '}'
-	os << "<" << tokens.front().first << ">";
-	os << " " << tokens.front().second << " ";  	
-	os << "</" << tokens.front().first << ">" << endl;
-	tokens.pop();
-
+	advanceUntilFlag(os, "}");
 	os << "</class>" << endl;	
 }
 
 void CompilationEngine::CompileSubroutine(ostream& os)
 {
 	os << "<subroutineDec>" << endl;
-	bool keepLoop = true;
-	while (keepLoop)
-	{
-		os << "<" << tokens.front().first << ">";
-		os << " " << tokens.front().second << " ";  	
-		os << "</" << tokens.front().first << ">" << endl;
-		if (tokens.front().second == "(") keepLoop = false;
-		tokens.pop();
-	}
+	advanceUntilFlag(os, "(");
 	os << "<parameterList> ";
 	CompileParameterList(os);
 	os << "</parameterList>" << endl;	
-
-	// push character ')' 
-	os << "<" << tokens.front().first << ">";
-	os << " " << tokens.front().second << " ";  	
-	os << "</" << tokens.front().first << ">" << endl;
-	tokens.pop();
-
+	advanceUntilFlag(os, ")");
 	os << "<subroutineBody>" << endl;
+	advanceUntilFlag(os, "{");
 
-	// push character '{'
-	os << "<" << tokens.front().first << ">";
-	os << " " << tokens.front().second << " ";  	
-	os << "</" << tokens.front().first << ">" << endl;
-	tokens.pop();
-
-	// give function from token
 	while (tokens.front().second != "}")
 	{
 		string keyword = tokens.front().second;
-		os << "keyword: " << keyword << endl;
+		// for test
+		// os << "keyword: " << keyword << endl;
 		switch (keyword2Type->find(keyword)->second)
 		{
 			case CompilationType::VARDEC:
@@ -104,47 +62,80 @@ void CompilationEngine::CompileSubroutine(ostream& os)
 				break;
 		}
 	}
+	advanceUntilFlag(os, "}");
 	os << "</subroutineBody>" << endl;
 	os << "</subroutineDec>" << endl;
 }
 
-void CompilationEngine::CompileVarDec(ostream& os)
+// print all elements and flag
+void CompilationEngine::advanceUntilFlag(ostream& os, string flag)
 {
-	os << "<varDec>" << endl;	
 	bool keepLoop = true;
 	while (keepLoop)
 	{
 		os << "<" << tokens.front().first << ">";
 		os << " " << tokens.front().second << " ";  	
 		os << "</" << tokens.front().first << ">" << endl;
-		if (tokens.front().second == ";") keepLoop = false;
+		if (tokens.front().second == flag) keepLoop = false;
 		tokens.pop();
 	}
+}
+
+// print all elements before flag
+void CompilationEngine::advanceBeforeFlag(ostream& os, string flag)
+{
+	while (tokens.front().second != ")")
+	{
+		os << "<" << tokens.front().first << ">";
+		os << " " << tokens.front().second << " ";  	
+		os << "</" << tokens.front().first << ">" << endl;
+		tokens.pop();
+	}
+}
+
+void CompilationEngine::CompileVarDec(ostream& os)
+{
+	os << "<varDec>" << endl;	
+	// advanceUntilFlag(os, ";");
+	popUntilFlag(";");
 	os << "</varDec>" << endl;	
+}
+
+void CompilationEngine::CompileExpression(ostream& os)
+{
+	os << "<expression>" << endl;
+	os << "</expression>" << endl;
 }
 
 void CompilationEngine::CompileStatements(ostream& os)
 {
 	os << "<statements>" << endl;
-	switch (keyword2Type->find(tokens.front().second)->second)
+	bool keepLoop = true;
+	while (keepLoop)
 	{
-		case CompilationType::DO:
-			CompileDo(os);
-			break;
-		case CompilationType::LET:
-			CompileLet(os);
-			break;
-		case CompilationType::WHILE:
-			CompileWhile(os);
-			break;
-		case CompilationType::RETURN:
-			CompileReturn(os);
-			break;
-		case CompilationType::IF:
-			CompileIf(os);
-			break;
-		default:
-			break;
+		unordered_map<string, CompilationType>::iterator iter = keyword2Type->find(tokens.front().second); 
+		CompilationType tmp = (iter == keyword2Type->end()) ? NONE : iter->second; 
+		switch (tmp)
+		{
+			case CompilationType::DO:
+				CompileDo(os);
+				break;
+			case CompilationType::LET:
+				CompileLet(os);
+				break;
+			case CompilationType::WHILE:
+				CompileWhile(os);
+				break;
+			case CompilationType::RETURN:
+				CompileReturn(os);
+				break;
+			case CompilationType::IF:
+				CompileIf(os);
+				break;
+			default:
+				keepLoop = false;
+				break;
+		}
 	}
 	os << "</statments>" << endl;
 }
@@ -152,24 +143,44 @@ void CompilationEngine::CompileStatements(ostream& os)
 void CompilationEngine::CompileDo(ostream& os)
 {
 	os << "<doStatement>" << endl;
+	// advanceUntilFlag(os, "(");
+	popUntilFlag("(");
+	CompileExpression(os);
+	// advanceUntilFlag(os, ";");
+	popUntilFlag(";");
 	os << "</doStatement>" << endl;
 }
 
 void CompilationEngine::CompileLet(ostream& os)
 {
 	os << "<letStatement>" << endl;
+	// advanceUntilFlag(os, "=");
+	popUntilFlag("=");
+	CompileExpression(os);
+	// advanceUntilFlag(os, ";");
+	popUntilFlag(";");
 	os << "</letStatement>" << endl;
 }
 
 void CompilationEngine::CompileWhile(ostream& os)
 {
 	os << "<whileStatement>" << endl;
+	// advanceUntilFlag(os, "(");
+	popUntilFlag("(");
+	CompileExpression(os);
+	// advanceUntilFlag(os, "{");
+	popUntilFlag("{");
+	// CompileStatements(os);
+	// advanceUntilFlag(os, "}");
+	popUntilFlag("}");
 	os << "</whileStatement>" << endl;
 }
 
 void CompilationEngine::CompileReturn(ostream& os)
 {
 	os << "<returnStatement>" << endl;
+	// advanceUntilFlag(os, ";");
+	popUntilFlag(";");
 	os << "</returnStatement>" << endl;
 }
 
@@ -181,11 +192,33 @@ void CompilationEngine::CompileIf(ostream& os)
 
 void CompilationEngine::CompileParameterList(ostream& os)
 {
-	while (tokens.front().second != ")")
+	//advanceBeforeFlag(os, ")");
+	popBeforeFlag(")");
+}
+
+//fot test
+void CompilationEngine::printAllTokens()
+{
+	while (!tokens.empty())
 	{
-		os << "<" << tokens.front().first << ">";
-		os << " " << tokens.front().second << " ";  	
-		os << "</" << tokens.front().first << ">" << endl;
+		cout << tokens.front().first << ": " << tokens.front().second << endl;
 		tokens.pop();
 	}
+}
+
+// for test
+void CompilationEngine::popUntilFlag(string flag)
+{
+	bool keepLoop = true;
+	while (keepLoop)
+	{
+		if (tokens.front().second == flag) keepLoop = false;
+		tokens.pop();
+	}
+}
+
+// for test
+void CompilationEngine::popBeforeFlag(string flag)
+{
+	while (tokens.front().second != ")") tokens.pop();
 }
