@@ -5,12 +5,15 @@
 
 using namespace std;
 
-enum CompilationType {CLASS, CLASSVARDEC, SUBROUTINEDEC, VARDEC, DO, LET, WHILE, RETURN, IF , EXPRESSION, TERM, EXPRESSIONLIST, NONE};
+enum CompilationType {CLASS, CLASSVARDEC, SUBROUTINEDEC, VARDEC, DO, LET, WHILE, RETURN, IF, NONE};
+
+enum ExpressionType {E_SYMBOL, E_KEYWORD, E_IDENTIFIER, E_INT_CONST, E_STRING_CONST};
 
 class CompilationEngine {
 private:
 	queue<pair<string, string>> tokens;
 	unordered_map<string, CompilationType>* keyword2Type; 
+	unordered_map<string, ExpressionType>* tag2Type;
 	void advanceUntilFlag(ostream&, string);
 	void advanceBeforeFlag(ostream&, string);
 	// for test
@@ -31,6 +34,8 @@ public:
 	void CompileReturn(ostream&);
 	void CompileIf(ostream&);
 	void CompileExpression(ostream&);
+	void CompileTerm(ostream&);
+	void CompileClassVarDec(ostream&);
 	//fot test
 	void printAllTokens();
 };

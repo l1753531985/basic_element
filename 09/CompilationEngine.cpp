@@ -1,10 +1,11 @@
 #include "CompilationEngine.h"
 
 CompilationEngine::CompilationEngine(const queue<pair<string, string>>& tokens)
-	:keyword2Type{new unordered_map<string, CompilationType>}
+	:keyword2Type{new unordered_map<string, CompilationType>}, tag2Type{new unordered_map<string, ExpressionType>}
 {
 	this->tokens = tokens;
 	keyword2Type->insert({{"class", CompilationType::CLASS}, {"static", CompilationType::CLASSVARDEC}, {"field", CompilationType::CLASSVARDEC}, {"constructor", CompilationType::SUBROUTINEDEC}, {"function", CompilationType::SUBROUTINEDEC}, {"method", CompilationType::SUBROUTINEDEC}, {"var", CompilationType::VARDEC}, {"do", CompilationType::DO}, {"let", CompilationType::LET}, {"while", CompilationType::WHILE}, {"return", CompilationType::RETURN}, {"if", CompilationType::IF}});	
+	tag2Type->insert({{"keyword", ExpressionType::E_KEYWORD}, {"symbol", ExpressionType::E_SYMBOL}, {"identifier", ExpressionType::E_IDENTIFIER}, {"integerConstant", ExpressionType::E_INT_CONST}, {"stringConstant", ExpressionType::E_STRING_CONST}});
 	CompileClass(cout);
 }
 
@@ -23,11 +24,21 @@ void CompilationEngine::CompileClass(ostream& os)
 		case CompilationType::SUBROUTINEDEC:
 			CompileSubroutine(os);
 			break;
+		case CompilationType::CLASSVARDEC:
+			CompileClassVarDec(os);
+			break;
 		default:
 			break;
 	}
 	advanceUntilFlag(os, "}");
 	os << "</class>" << endl;	
+}
+
+void CompilationEngine::CompileClassVarDec(ostream& os)
+{
+	os << "<classVarDec>"<< endl;
+	popUntilFlag(";");
+	os << "</classVarDec>"<< endl;
 }
 
 void CompilationEngine::CompileSubroutine(ostream& os)
@@ -104,7 +115,36 @@ void CompilationEngine::CompileVarDec(ostream& os)
 void CompilationEngine::CompileExpression(ostream& os)
 {
 	os << "<expression>" << endl;
+	/*
+	CompileTerm(os);
+	os << "<" << tokens.front().first << ">";
+	os << " " << tokens.front().second << " ";  	
+	os << "</" << tokens.front().first << ">" << endl;
+	tokens.pop();
+	CompileTerm(os);
+	*/
 	os << "</expression>" << endl;
+}
+
+void CompilationEngine::CompileTerm(ostream& os)
+{
+	os << "<term>" << endl;
+	ExpressionType termStart = tag2Type->find(tokens.front().first)->second;
+	os << "<" << tokens.front().first << ">";
+	os << " " << tokens.front().second << " ";  	
+	os << "</" << tokens.front().first << ">" << endl;
+	tokens.pop();
+	string afterVarName = "";
+	switch (termStart)
+	{
+		case ExpressionType::E_IDENTIFIER:
+			afterVarName = tokens.front().second;
+			if (afterVarName == ".")
+			break;
+		default:
+			break;
+	}
+	os << "</term>" << endl;
 }
 
 void CompilationEngine::CompileStatements(ostream& os)
@@ -154,6 +194,25 @@ void CompilationEngine::CompileDo(ostream& os)
 void CompilationEngine::CompileLet(ostream& os)
 {
 	os << "<letStatement>" << endl;
+	// output keyword let
+	os << "<" << tokens.front().first << ">";
+	os << " " << tokens.front().second << " ";  	
+	os << "</" << tokens.front().first << ">" << endl;
+	tokens.pop();
+	// output identifier varName 
+	os << "<" << tokens.front().first << ">";
+	os << " " << tokens.front().second << " ";  	
+	os << "</" << tokens.front().first << ">" << endl;
+	tokens.pop();
+
+	if (tokens.front().second == "[")
+	{
+		// advanceUntilFlag(os, "[");
+		popUntilFlag("[");
+		CompileExpression(os);
+		// advanceUntilFlag(os, "]");
+		popUntilFlag("]");
+	}
 	// advanceUntilFlag(os, "=");
 	popUntilFlag("=");
 	CompileExpression(os);
