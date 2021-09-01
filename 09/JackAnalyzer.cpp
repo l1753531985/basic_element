@@ -49,7 +49,8 @@ int main()
 {
 	queue<pair<string, string>> tokens;
 	process(tokens);
-	CompilationEngine ce{tokens};
+	int indentation = 4;
+	CompilationEngine ce{tokens, indentation};
 	//ce.printAllTokens();
 	return 0;
 }

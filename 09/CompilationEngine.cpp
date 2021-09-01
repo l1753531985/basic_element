@@ -1,11 +1,11 @@
 #include "CompilationEngine.h"
 
-CompilationEngine::CompilationEngine(const queue<pair<string, string>>& tokens)
-	: compileByToken{new unordered_map<string, CompileType>}
+CompilationEngine::CompilationEngine(const queue<pair<string, string>>& tokens, int val)
+	: compileByToken{new unordered_map<string, CompileType>}, indentationSize{val}
 {
 	this->tokens = tokens;
 	compileByToken->insert({{"static", CLASSVARDEC}, {"field", CLASSVARDEC}, {"constructor", SUBROUTINEDEC}, {"function", SUBROUTINEDEC}, {"method", SUBROUTINEDEC}, {"var", VAR}, {"if", IF}, {"while", WHILE}, {"do", DO}, {"return", RETURN}});
-	CompileClass(cout);
+	CompileClass(cout, 0);
 }
 
 CompilationEngine::~CompilationEngine()
@@ -13,31 +13,31 @@ CompilationEngine::~CompilationEngine()
 	delete compileByToken;
 }
 
-void CompilationEngine::printTokenInXml(ostream& os)
+void CompilationEngine::printTokenInXml(ostream& os, int indentation)
 {
-	os << "<" << tokens.front().first << ">" ;
+	os << setw(indentation) << "<" << tokens.front().first << ">" ;
 	os << " " << tokens.front().second << " ";
 	os << "</" << tokens.front().first << ">" << endl;
 }
 
 // print all elements and flag
-void CompilationEngine::advanceUntilFlag(ostream& os, string flag)
+void CompilationEngine::advanceUntilFlag(ostream& os, string flag, int indentation)
 {
 	bool keepLoop = true;
 	while (keepLoop)
 	{
-		printTokenInXml(os);
+		printTokenInXml(os, indentation);
 		if (tokens.front().second == flag) keepLoop = false;
 		tokens.pop();
 	}
 }
 
 // print all elements before flag
-void CompilationEngine::advanceBeforeFlag(ostream& os, string flag)
+void CompilationEngine::advanceBeforeFlag(ostream& os, string flag, int indentation)
 {
 	while (tokens.front().second != flag)
 	{
-		printTokenInXml(os);
+		printTokenInXml(os, indentation);
 		tokens.pop();
 	}
 }
@@ -76,20 +76,21 @@ void CompilationEngine::popBeforeFlag(string flag)
 	while (tokens.front().second != ")") tokens.pop();
 }
 
-void CompilationEngine::CompileClass(ostream& os)
+void CompilationEngine::CompileClass(ostream& os, int indentation)
 {
 	os << "<class>" << endl;
-	advanceUntilFlag(os, "{");
+	advanceUntilFlag(os, "{", indentation+indentationSize);
 	bool loopFlag = true;
 	while (loopFlag)
 	{
+		sleep(1);
 		switch (token2Type(tokens.front().second))
 		{
 			case CLASSVARDEC:
-				CompileClassVarDec(os);
+				CompileClassVarDec(os, indentation+indentationSize);
 				break;
 			case SUBROUTINEDEC:
-				CompileSubroutineDec(os);
+				CompileSubroutineDec(os, indentation+indentationSize);
 				break;
 			case NONE:
 				loopFlag = false;
@@ -98,38 +99,39 @@ void CompilationEngine::CompileClass(ostream& os)
 				break;
 		}
 	}
-	advanceUntilFlag(os, "}");
+	advanceUntilFlag(os, "}", indentation+indentationSize);
 	os << "</class>" << endl;
 }
 
-void CompilationEngine::CompileClassVarDec(ostream& os)
+void CompilationEngine::CompileClassVarDec(ostream& os, int indentation)
 {
-	os << "<CompileClassVarDec>" << endl;
-	advanceUntilFlag(os, ";");
-	os << "</CompileClassVarDec>" << endl;
+	cout << "indentation: " << indentation << endl;
+	os << setw(indentation) << "<CompileClassVarDec>" << endl;
+	advanceUntilFlag(os, ";", indentation+indentationSize);
+	os << setw(indentation) << "</CompileClassVarDec>" << endl;
 }
 
-void CompilationEngine::CompileSubroutineDec(ostream& os)
+void CompilationEngine::CompileSubroutineDec(ostream& os, int indentation)
 {
-	os << "<CompileSubroutineDec>" << endl;
-	advanceUntilFlag(os, "(");
-	CompileParameterList(os);
-	os << "<subroutineBody>" << endl;
-	advanceUntilFlag(os, "{");
+	os << setw(indentation) << "<CompileSubroutineDec>" << endl;
+	advanceUntilFlag(os, "(", indentation);
+	CompileParameterList(os, indentation+indentationSize);
+	os << setw(indentation) << "<subroutineBody>" << endl;
+	advanceUntilFlag(os, "{", indentation);
 	bool loopFlag = true;
 	while (loopFlag)
 	{
 		switch (token2Type(tokens.front().second))
 		{
 			case CompileType::VAR:
-				CompileVarDec(os);
+				CompileVarDec(os, indentation+indentationSize);
 				break;
 			case CompileType::LET:
 			case CompileType::IF:
 			case CompileType::WHILE:
 			case CompileType::DO:
 			case CompileType::RETURN:
-				CompileStatements(os);
+				CompileStatements(os, indentation+indentationSize);
 				break;
 			case CompileType::NONE:
 				loopFlag = false;
@@ -138,27 +140,27 @@ void CompilationEngine::CompileSubroutineDec(ostream& os)
 				break;
 		}
 	}
-	advanceUntilFlag(os, "}");
-	os << "</subroutineBody>" << endl;
-	os << "</CompileSubroutineDec>" << endl;
+	advanceUntilFlag(os, "}", indentation);
+	os << setw(indentation) << "</subroutineBody>" << endl;
+	os << setw(indentation) << "</CompileSubroutineDec>" << endl;
 }
 
-void CompilationEngine::CompileParameterList(ostream& os)
+void CompilationEngine::CompileParameterList(ostream& os, int indentation)
 {
-	os << "<parameterList>";
-	advanceBeforeFlag(os, ")");
+	os << setw(indentation) << "<parameterList>";
+	advanceBeforeFlag(os, ")", indentation);
 	os << "</parameterList>" << endl;
 }
 
-void CompilationEngine::CompileVarDec(ostream& os)
+void CompilationEngine::CompileVarDec(ostream& os, int indentation)
 {
-	os << "<varDec>" << endl;
-	advanceUntilFlag(os, ";");
-	os << "</varDec>" << endl;
+	os << setw(indentation) << "<varDec>" << endl;
+	advanceUntilFlag(os, ";", indentation);
+	os << setw(indentation) << "</varDec>" << endl;
 }
 
-void CompilationEngine::CompileStatements(ostream& os)
+void CompilationEngine::CompileStatements(ostream& os, int indentation)
 {
-	os << "<CompileStatements>" << endl;
-	os << "</CompileStatements>" << endl;
+	os << setw(indentation) << "<CompileStatements>" << endl;
+	os << setw(indentation) << "</CompileStatements>" << endl;
 }
