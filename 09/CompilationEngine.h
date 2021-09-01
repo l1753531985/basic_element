@@ -5,7 +5,7 @@
 
 using namespace std;
 
-enum CompileType {CLASSVARDEC, SUBROUTINEDEC};
+enum CompileType {CLASSVARDEC, SUBROUTINEDEC, VAR, LET, IF, WHILE, DO, RETURN, NONE};
 
 class CompilationEngine {
 private:
@@ -14,6 +14,7 @@ private:
 	void advanceUntilFlag(ostream&, string);
 	void advanceBeforeFlag(ostream&, string);
 	void printTokenInXml(ostream&);
+	CompileType token2Type(string);
 	// for test
 	void popUntilFlag(string);
 	// for test
@@ -25,6 +26,8 @@ public:
 	void CompileClassVarDec(ostream&);
 	void CompileSubroutineDec(ostream&);
 	void CompileParameterList(ostream&);
+	void CompileVarDec(ostream&);
+	void CompileStatements(ostream&);
 	//fot test
 	void printAllTokens();
 };

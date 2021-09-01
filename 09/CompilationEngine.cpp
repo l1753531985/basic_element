@@ -4,7 +4,7 @@ CompilationEngine::CompilationEngine(const queue<pair<string, string>>& tokens)
 	: compileByToken{new unordered_map<string, CompileType>}
 {
 	this->tokens = tokens;
-	compileByToken->insert({{"static", CLASSVARDEC}, {"field", CLASSVARDEC}, {"constructor", SUBROUTINEDEC}, {"function", SUBROUTINEDEC}, {"method", SUBROUTINEDEC}});
+	compileByToken->insert({{"static", CLASSVARDEC}, {"field", CLASSVARDEC}, {"constructor", SUBROUTINEDEC}, {"function", SUBROUTINEDEC}, {"method", SUBROUTINEDEC}, {"var", VAR}, {"if", IF}, {"while", WHILE}, {"do", DO}, {"return", RETURN}});
 	CompileClass(cout);
 }
 
@@ -42,6 +42,13 @@ void CompilationEngine::advanceBeforeFlag(ostream& os, string flag)
 	}
 }
 
+CompileType CompilationEngine::token2Type(string token)
+{
+	unordered_map<string, CompileType>::iterator iter = compileByToken->find(token);
+	if (iter == compileByToken->end()) return CompileType::NONE;
+	return iter->second;
+}
+
 //fot test
 void CompilationEngine::printAllTokens()
 {
@@ -76,27 +83,20 @@ void CompilationEngine::CompileClass(ostream& os)
 	bool loopFlag = true;
 	while (loopFlag)
 	{
-		unordered_map<string, CompileType>::iterator iter = compileByToken->find(tokens.front().second);
-		if (iter != compileByToken->end())
+		switch (token2Type(tokens.front().second))
 		{
-			CompileType type = iter->second;
-			switch (type)
-			{
-				case CLASSVARDEC:
-					CompileClassVarDec(os);
-					break;
-				case SUBROUTINEDEC:
-					CompileSubroutineDec(os);
-					break;
-				default:
-					break;
-			}
+			case CLASSVARDEC:
+				CompileClassVarDec(os);
+				break;
+			case SUBROUTINEDEC:
+				CompileSubroutineDec(os);
+				break;
+			case NONE:
+				loopFlag = false;
+				break;
+			default:
+				break;
 		}
-		else
-		{
-			loopFlag = false;
-		}
-
 	}
 	advanceUntilFlag(os, "}");
 	os << "</class>" << endl;
@@ -114,7 +114,32 @@ void CompilationEngine::CompileSubroutineDec(ostream& os)
 	os << "<CompileSubroutineDec>" << endl;
 	advanceUntilFlag(os, "(");
 	CompileParameterList(os);
+	os << "<subroutineBody>" << endl;
 	advanceUntilFlag(os, "{");
+	bool loopFlag = true;
+	while (loopFlag)
+	{
+		switch (token2Type(tokens.front().second))
+		{
+			case CompileType::VAR:
+				CompileVarDec(os);
+				break;
+			case CompileType::LET:
+			case CompileType::IF:
+			case CompileType::WHILE:
+			case CompileType::DO:
+			case CompileType::RETURN:
+				CompileStatements(os);
+				break;
+			case CompileType::NONE:
+				loopFlag = false;
+				break;
+			default:
+				break;
+		}
+	}
+	advanceUntilFlag(os, "}");
+	os << "</subroutineBody>" << endl;
 	os << "</CompileSubroutineDec>" << endl;
 }
 
@@ -123,4 +148,17 @@ void CompilationEngine::CompileParameterList(ostream& os)
 	os << "<parameterList>";
 	advanceBeforeFlag(os, ")");
 	os << "</parameterList>" << endl;
+}
+
+void CompilationEngine::CompileVarDec(ostream& os)
+{
+	os << "<varDec>" << endl;
+	advanceUntilFlag(os, ";");
+	os << "</varDec>" << endl;
+}
+
+void CompilationEngine::CompileStatements(ostream& os)
+{
+	os << "<CompileStatements>" << endl;
+	os << "</CompileStatements>" << endl;
 }
