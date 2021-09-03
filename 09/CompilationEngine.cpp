@@ -262,7 +262,7 @@ void CompilationEngine::CompileReturn(ostream& os, int indentation)
 
 void CompilationEngine::CompileIf(ostream& os, int indentation)
 {
-	os << setw(indentation) << " " << "<IfStatement>" << endl;
+	os << setw(indentation) << " " << "<ifStatement>" << endl;
 	//print keyword
 	printTokenInXml(os, indentation+indentationSize);
 	tokens.pop();
@@ -285,14 +285,14 @@ void CompilationEngine::CompileIf(ostream& os, int indentation)
 		advanceUntilFlag(os, "}", indentation+indentationSize);
 	}
 
-	os << setw(indentation) << " " << "</IfStatement>" << endl;
+	os << setw(indentation) << " " << "</ifStatement>" << endl;
 }
 
 void CompilationEngine::CompileExpression(ostream& os, int indentation)
 {
 	os << setw(indentation) << " " << "<expression>" << endl;
 	CompileTerm(os, indentation+indentationSize);
-	while (ops->find(tokens.front().first) != ops->end())
+	while (ops->find(tokens.front().second) != ops->end())
 	{
 		printTokenInXml(os, indentation+indentationSize);
 		tokens.pop();
