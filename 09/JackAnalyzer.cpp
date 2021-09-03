@@ -50,7 +50,7 @@ int main()
 	queue<pair<string, string>> tokens;
 	process(tokens);
 	int indentation = 4;
-	CompilationEngine ce{tokens, indentation};
+	CompilationEngine ce{tokens, indentation, "test.xml"};
 	//ce.printAllTokens();
 	return 0;
 }

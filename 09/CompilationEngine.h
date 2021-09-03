@@ -5,6 +5,7 @@
 #include <unordered_set>
 #include <iomanip>
 #include <unistd.h>
+#include <fstream>
 
 using namespace std;
 
@@ -29,8 +30,10 @@ private:
 	// for test
 	void popBeforeFlag(string);
 	int indentationSize;
+	string filename;
+	ofstream ofile;
 public:
-	CompilationEngine(const queue<pair<string, string>>&, int);
+	CompilationEngine(const queue<pair<string, string>>&, int, string);
 	~CompilationEngine();
 	void CompileClass(ostream&, int);
 	void CompileClassVarDec(ostream&, int);

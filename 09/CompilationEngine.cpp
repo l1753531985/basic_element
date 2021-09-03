@@ -1,17 +1,23 @@
 #include "CompilationEngine.h"
 
-CompilationEngine::CompilationEngine(const queue<pair<string, string>>& tokens, int val)
-	: compileByToken{new unordered_map<string, CompileType>}, compileByTag{new unordered_map<string, TagType>}, ops{new unordered_set<string>}, indentationSize{val}
+CompilationEngine::CompilationEngine(const queue<pair<string, string>>& tokens, int val, string name)
+	: compileByToken{new unordered_map<string, CompileType>}, compileByTag{new unordered_map<string, TagType>}, ops{new unordered_set<string>}, indentationSize{val}, filename{name}
 {
 	this->tokens = tokens;
+
 	compileByToken->insert({{"static", CLASSVARDEC}, {"field", CLASSVARDEC}, {"constructor", SUBROUTINEDEC}, {"function", SUBROUTINEDEC}, {"method", SUBROUTINEDEC}, {"var", VAR}, {"if", IF}, {"while", WHILE}, {"do", DO}, {"return", RETURN}, {"let", LET}});
-	compileByTag->insert({{"keyword", T_KEYWORD}, {"symbol", T_SYMBOL}, {"identifier", T_IDENTIFIER}, {"int_const", T_INI_CONST}, {"string_const", T_STRING_CONST}});
+	compileByTag->insert({{"keyword", T_KEYWORD}, {"symbol", T_SYMBOL}, {"identifier", T_IDENTIFIER}, {"integerConstant", T_INI_CONST}, {"stringConstant", T_STRING_CONST}});
 	ops->insert({"+", "-", "*", "/", "&", "|", "<", ">", "="});
-	CompileClass(cout, 0);
+
+	ofile.open(filename);
+	CompileClass(ofile, 0);
+	// for test
+	//CompileClass(cout, 0);
 }
 
 CompilationEngine::~CompilationEngine()
 {
+	if (ofile.is_open()) ofile.close();
 	delete compileByToken;
 }
 
@@ -160,9 +166,9 @@ void CompilationEngine::CompileSubroutineBody(ostream& os, int indentation)
 
 void CompilationEngine::CompileParameterList(ostream& os, int indentation)
 {
-	os << setw(indentation) << " " << "<parameterList>";
+	os << setw(indentation) << " " << "<parameterList>" << endl;
 	advanceBeforeFlag(os, ")", indentation);
-	os << " " << "</parameterList>" << endl;
+	os << setw(indentation) << " " << "</parameterList>" << endl;
 }
 
 void CompilationEngine::CompileVarDec(ostream& os, int indentation)
@@ -368,10 +374,10 @@ void CompilationEngine::CompileSubroutineCall(ostream& os, int indentation)
 
 void CompilationEngine::CompileExpressionList(ostream& os, int indentation) 
 {
-	os << setw(indentation) << " " << "<expressionList>";
+	os << setw(indentation) << " " << "<expressionList>" << endl;
 	if (tokens.front().second == ")") 
 	{
-		os << " " << "</expressionList>" << endl;
+		os << setw(indentation) << " " << "</expressionList>" << endl;
 		return;
 	}
 	CompileExpression(os, indentation+indentationSize);
@@ -380,5 +386,5 @@ void CompilationEngine::CompileExpressionList(ostream& os, int indentation)
 		advanceUntilFlag(os, ",", indentation+indentationSize);	
 		CompileExpression(os, indentation+indentationSize);
 	}
-	os << " " << "</expressionList>" << endl;
+	os << setw(indentation) << " " << "</expressionList>" << endl;
 }
