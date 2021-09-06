@@ -7,7 +7,7 @@ CompilationEngine::CompilationEngine(const queue<pair<string, string>>& tokens, 
 
 	compileByToken->insert({{"static", CLASSVARDEC}, {"field", CLASSVARDEC}, {"constructor", SUBROUTINEDEC}, {"function", SUBROUTINEDEC}, {"method", SUBROUTINEDEC}, {"var", VAR}, {"if", IF}, {"while", WHILE}, {"do", DO}, {"return", RETURN}, {"let", LET}});
 	compileByTag->insert({{"keyword", T_KEYWORD}, {"symbol", T_SYMBOL}, {"identifier", T_IDENTIFIER}, {"integerConstant", T_INI_CONST}, {"stringConstant", T_STRING_CONST}});
-	ops->insert({"+", "-", "*", "/", "&", "|", "<", ">", "="});
+	ops->insert({"+", "-", "*", "/", "&amp;", "|", "&lt;", "&gt;", "="});
 
 	ofile.open(filename);
 	CompileClass(ofile, 0);
@@ -312,8 +312,8 @@ void CompilationEngine::CompileTerm(ostream& os, int indentation)
 	os << setw(indentation) << " " << "<term>" << endl;
 	switch(tag2Type(tokens.front().first))
 	{
-		case T_KEYWORD:
 		case T_INI_CONST:
+		case T_KEYWORD:
 		case T_STRING_CONST:
 			printTokenInXml(os, indentation+indentationSize);
 			tokens.pop();

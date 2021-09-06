@@ -112,7 +112,8 @@ void JackTokenizer::wordSplitIntoTokens()
 		{
 			if (ispunct(x)) 
 			{
-				string tmp{1, x};
+				string tmp;
+				tmp.push_back(x);
 				new_cur += " " + tmp + " ";
 			}
 			else
@@ -207,8 +208,8 @@ string JackTokenizer::symbol()
 string JackTokenizer::identifier()
 { return token; }
 
-int JackTokenizer::intVal()
-{ return atoi(token.c_str()); }
+string JackTokenizer::intVal()
+{ return token; }
 
 string JackTokenizer::stringVal()
 {

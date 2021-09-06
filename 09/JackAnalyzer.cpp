@@ -7,7 +7,6 @@ void process(queue<pair<string, string>>& q)
 	JackTokenizer token{"./Main.jack"};
 	while (token.hasMoreTokens())
 	{
-		//stm << token.getWord() << endl;
 		token.advance();
 		string tag = "", singleToken = "";
 		switch (token.tokenType())
@@ -40,8 +39,6 @@ void process(queue<pair<string, string>>& q)
 		}
 		pair<string, string> p{tag, singleToken};
 		q.push(p);
-		//stm << token.type2Str(token.tokenType()) << endl;
-		//stm << token.getWord() << endl; 
 	}
 }
 

@@ -8,7 +8,7 @@
 #include <sstream>
 #include <queue>
 #include <unistd.h>
-
+#include <fstream>
 
 using namespace std;
 
@@ -42,7 +42,7 @@ public:
 	string keyword();
 	string symbol();
 	string identifier();
-	int intVal();
+	string intVal();
 	string stringVal();
 	~JackTokenizer();
 	//test
