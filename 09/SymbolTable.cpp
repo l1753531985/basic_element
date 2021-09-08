@@ -26,26 +26,22 @@ void SymbolTable::Define(string name, string type, KindType kind)
 	{
 		case KindType::STATIC:
 			s.index = staticSegCount;
-			pair<string, Status> elem{name, s};
-			classScope->insert(elem);
+			classScope->insert({name, s});
 			staticSegCount++;
 			break;
 		case KindType::FIELD:
 			s.index = fieldSegCount;
-			pair<string, Status> elem{name, s};
-			classScope->insert(elem);
+			classScope->insert({name, s});
 			fieldSegCount++;
 			break;
 		case KindType::ARG:
 			s.index = argSegCount;
-			pair<string, Status> elem{name, s};
-			methodScope->insert(elem);
+			methodScope->insert({name, s});
 			argSegCount++;
 			break;
 		case KindType::VAR:
 			s.index = varSegCount;
-			pair<string, Status> elem{name, s};
-			methodScope->insert(elem);
+			methodScope->insert({name, s});
 			varSegCount++;
 			break;
 		default:
@@ -68,8 +64,17 @@ int SymbolTable::varCount(KindType kind)
 	}
 }
 
-KindType SymbolTable::keindOf(string name)
+KindType SymbolTable::kindOf(string name)
 {
-		
+	unordered_map<string, Status>::iterator iter = classScope->find(name);	
+
+	if (iter != classScope->end())
+		return (iter->second).kind;
+
+	iter = methodScope->find(name);
+	if (iter != methodScope->end())
+		return (iter->second).kind;
+
+	return KindType::NONE;
 }
 

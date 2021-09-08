@@ -25,7 +25,7 @@ public:
 	void startSubroutine();
 	void Define(string, string, KindType);
 	int varCount(KindType);
-	KindType KindOf(string);
+	KindType kindOf(string);
 	string TypeOf(string);
 	int IndexOf(string);
 };
