@@ -1,10 +1,9 @@
 #include "CompilationEngine.h"
 
-CompilationEngine::CompilationEngine(const queue<pair<string, string>>& tokens, int val, string name, unordered_map<string, pair<string, string>>* symbolsInTables)
+CompilationEngine::CompilationEngine(const queue<pair<string, string>>& tokens, int val, string name)
 	: compileByToken{new unordered_map<string, CompileType>}, compileByTag{new unordered_map<string, TagType>}, ops{new unordered_set<string>}, indentationSize{val}, filename{name}
 {
 	this->tokens = tokens;
-	this->symbolsInTables = symbolsInTables;
 
 	compileByToken->insert({{"static", CLASSVARDEC}, {"field", CLASSVARDEC}, {"constructor", SUBROUTINEDEC}, {"function", SUBROUTINEDEC}, {"method", SUBROUTINEDEC}, {"var", VAR}, {"if", IF}, {"while", WHILE}, {"do", DO}, {"return", RETURN}, {"let", LET}});
 	compileByTag->insert({{"keyword", T_KEYWORD}, {"symbol", T_SYMBOL}, {"identifier", T_IDENTIFIER}, {"integerConstant", T_INI_CONST}, {"stringConstant", T_STRING_CONST}});
@@ -95,10 +94,10 @@ void CompilationEngine::popBeforeFlag(string flag)
 }
 
 //for test
-void CompilationEngine::printSymbolsTables(ostream& os)
+void CompilationEngine::printSymbolsTables(ostream& os, unordered_map<string, pair<string, string>>* table)
 {
 	unordered_map<string, pair<string, string>>::iterator iter;
-	for (iter = symbolsInTables->begin(); iter != symbolsInTables->end(); iter++)
+	for (iter = table->begin(); iter != table->end(); iter++)
 		os << "name: " << iter->first << "\tkind: " << iter->second.first << "\ttype: " << iter->second.second << endl;
 }
 
@@ -135,7 +134,7 @@ void CompilationEngine::CompileClass(ostream& os, int indentation)
 void CompilationEngine::CompileClassVarDec(ostream& os, int indentation)
 {
 	os << setw(indentation) << " " << "<classVarDec>" << endl;
-	getSymbolsForTables(os, indentation+indentationSize);
+	getSymbolsFromDec(os, indentation+indentationSize);
 	advanceUntilFlag(os, ";", indentation+indentationSize);
 	os << setw(indentation) << " " << "</classVarDec>" << endl;
 }
@@ -183,6 +182,7 @@ void CompilationEngine::CompileSubroutineBody(ostream& os, int indentation)
 void CompilationEngine::CompileParameterList(ostream& os, int indentation)
 {
 	os << setw(indentation) << " " << "<parameterList>" << endl;
+	getSymbolsFromParaList(os, indentation);
 	advanceBeforeFlag(os, ")", indentation);
 	os << setw(indentation) << " " << "</parameterList>" << endl;
 }
@@ -190,7 +190,7 @@ void CompilationEngine::CompileParameterList(ostream& os, int indentation)
 void CompilationEngine::CompileVarDec(ostream& os, int indentation)
 {
 	os << setw(indentation) << " " << "<varDec>" << endl;
-	getSymbolsForTables(os, indentation+indentationSize);
+	getSymbolsFromDec(os, indentation+indentationSize);
 	advanceUntilFlag(os, ";", indentation+indentationSize);
 	os << setw(indentation) << " " << "</varDec>" << endl;
 }
@@ -406,7 +406,7 @@ void CompilationEngine::CompileExpressionList(ostream& os, int indentation)
 	os << setw(indentation) << " " << "</expressionList>" << endl;
 }
 
-void CompilationEngine::getSymbolsForTables(ostream& os, int indentation)
+void CompilationEngine::getSymbolsFromDec(ostream& os, int indentation)
 {
 	// get identifier kind
 	printTokenInXml(os, indentation);
@@ -427,9 +427,39 @@ void CompilationEngine::getSymbolsForTables(ostream& os, int indentation)
 
 		// get identifier itself 
 		printTokenInXml(os, indentation);
-		string symbol = tokens.front().second;
+		string symbolName = tokens.front().second;
 		tokens.pop();
 		
-		symbolsInTables->insert({symbol, status});
+		symbolsInTables.insert({symbolName, status});
 	}
 }
+
+void CompilationEngine::getSymbolsFromParaList(ostream& os, int indentation)
+{
+	string kind = "argument";
+	while (tokens.front().second != ")")
+	{
+		if (tokens.front().second == ",")
+			advanceUntilFlag(os, ",", indentation);
+
+		// get identifier type 
+		printTokenInXml(os, indentation);
+		string type = tokens.front().second;
+		tokens.pop();
+
+		pair<string, string> status{kind, type};
+
+		// get identifier itself 
+		printTokenInXml(os, indentation);
+		string symbolName = tokens.front().second;
+		tokens.pop();
+
+		symbolsInTables.insert({symbolName, status});
+	}
+}
+
+unordered_map<string, pair<string, string>>* CompilationEngine::getSymbolsTable()
+{
+	return new unordered_map<string, pair<string, string>>{symbolsInTables}; 	
+}
+

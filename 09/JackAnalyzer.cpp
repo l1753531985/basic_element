@@ -48,9 +48,13 @@ int main()
 	queue<pair<string, string>> tokens;
 	getTokens(tokens);
 	
-	unordered_map<string, pair<string, string>> symbolsOfTable;
 	int indentation = 4;
-	CompilationEngine ce{tokens, indentation, "test.xml", &symbolsOfTable};
+	CompilationEngine ce{tokens, indentation, "test.xml"};
 	//ce.printAllTokens();
+	
+	unordered_map<string, pair<string, string>>* symbolsOfTable{ce.getSymbolsTable()};
+	ce.printSymbolsTables(cout, symbolsOfTable);
+	delete symbolsOfTable;
+
 	return 0;
 }
