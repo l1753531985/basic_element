@@ -1,8 +1,9 @@
 #include <queue>
+#include <unordered_map>
 #include "JackTokenizer.h"
 #include "CompilationEngine.h"
 
-void process(queue<pair<string, string>>& q)
+void getTokens(queue<pair<string, string>>& q)
 {
 	JackTokenizer token{"./Main.jack"};
 	while (token.hasMoreTokens())
@@ -45,9 +46,11 @@ void process(queue<pair<string, string>>& q)
 int main()
 {
 	queue<pair<string, string>> tokens;
-	process(tokens);
+	getTokens(tokens);
+	
+	unordered_map<string, pair<string, string>> symbolsOfTable;
 	int indentation = 4;
-	CompilationEngine ce{tokens, indentation, "test.xml"};
+	CompilationEngine ce{tokens, indentation, "test.xml", &symbolsOfTable};
 	//ce.printAllTokens();
 	return 0;
 }

@@ -32,8 +32,10 @@ private:
 	int indentationSize;
 	string filename;
 	ofstream ofile;
+	unordered_map<string, pair<string, string>>* symbolsInTables;
+	void getSymbolsForTables(ostream&, int);
 public:
-	CompilationEngine(const queue<pair<string, string>>&, int, string);
+	CompilationEngine(const queue<pair<string, string>>&, int, string, unordered_map<string, pair<string, string>>*);
 	~CompilationEngine();
 	void CompileClass(ostream&, int);
 	void CompileClassVarDec(ostream&, int);
@@ -52,4 +54,5 @@ public:
 	void CompileExpressionList(ostream&, int);
 	//fot test
 	void printAllTokens();
+	void printSymbolsTables(ostream&);
 };
