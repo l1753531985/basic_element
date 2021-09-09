@@ -19,6 +19,7 @@ private:
 	int fieldSegCount;
 	int argSegCount;
 	int varSegCount;
+	unordered_map<string, Status>::iterator getIter(string);
 public:
 	SymbolTable();
 	~SymbolTable();

@@ -64,17 +64,40 @@ int SymbolTable::varCount(KindType kind)
 	}
 }
 
-KindType SymbolTable::kindOf(string name)
+unordered_map<string, Status>::iterator SymbolTable::getIter(string name)
 {
 	unordered_map<string, Status>::iterator iter = classScope->find(name);	
-
 	if (iter != classScope->end())
-		return (iter->second).kind;
+		return iter;
 
 	iter = methodScope->find(name);
 	if (iter != methodScope->end())
-		return (iter->second).kind;
+		return iter;
 
+	return iter;
+}
+
+KindType SymbolTable::kindOf(string name)
+{
+	unordered_map<string, Status>::iterator iter = getIter(name);
+	if (iter != methodScope->end())
+		return (iter->second).kind;
 	return KindType::NONE;
 }
+
+string SymbolTable::TypeOf(string name)
+{
+	unordered_map<string, Status>::iterator iter = getIter(name);
+	if (iter != methodScope->end())
+		return (iter->second).type;
+	return "";
+}
+
+int SymbolTable::IndexOf(string name)
+{
+	unordered_map<string, Status>::iterator iter = getIter(name);
+	if (iter != methodScope->end())
+		return (iter->second).index;
+	return -1;
+}	
 
