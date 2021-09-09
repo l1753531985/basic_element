@@ -19,6 +19,8 @@ CompilationEngine::~CompilationEngine()
 {
 	if (ofile.is_open()) ofile.close();
 	delete compileByToken;
+	delete compileByTag;
+	delete ops;
 }
 
 void CompilationEngine::printTokenInXml(ostream& os, int indentation)
