@@ -430,7 +430,7 @@ void CompilationEngine::getSymbolsFromDec(ostream& os, int indentation)
 		string symbolName = tokens.front().second;
 		tokens.pop();
 		
-		symbolsInTables.insert({symbolName, status});
+		symbolsInTables[symbolName] = status;
 	}
 }
 
@@ -454,7 +454,7 @@ void CompilationEngine::getSymbolsFromParaList(ostream& os, int indentation)
 		string symbolName = tokens.front().second;
 		tokens.pop();
 
-		symbolsInTables.insert({symbolName, status});
+		symbolsInTables[symbolName] = status;
 	}
 }
 

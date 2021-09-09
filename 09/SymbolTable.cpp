@@ -1,8 +1,9 @@
 #include "SymbolTable.h"
 
-SymbolTable::SymbolTable()
-	: classScope{new unordered_map<string, Status>}, methodScope{new unordered_map<string, Status>}, data{new unordered_map<string, pair<string, string>>}, staticSegCount{0}, fieldSegCount{0}, argSegCount{0}, varSegCount{0}
+SymbolTable::SymbolTable(const queue<string>& identifiers)
+	: classScope{new unordered_map<string, Status>}, methodScope{new unordered_map<string, Status>}, data{new unordered_map<string, pair<string, string>>}, identifiersInOrder{identifiers}, staticSegCount{0}, fieldSegCount{0}, argSegCount{0}, varSegCount{0}
 {
+	str2KindType.insert({{"static", KindType::STATIC}, {"field", KindType::FIELD}, {"argument", KindType::ARG}, {"var", KindType::VAR}});
 }
 
 SymbolTable::~SymbolTable()
@@ -110,7 +111,16 @@ void SymbolTable::getData(unordered_map<string, pair<string, string>>* resData)
 //for test
 void SymbolTable::printData()
 {
-	unordered_map<string, pair<string, string>>::iterator iter;
-	for (iter = data->begin(); iter != data->end(); iter++)
-		cout << "name: " << iter->first << "\tkind: " << iter->second.first << "\ttype: " << iter->second.second << endl;
+	while (!identifiersInOrder.empty())
+	{
+		string name = identifiersInOrder.front();
+		unordered_map<string, pair<string, string>>::iterator iter = data->find(name);
+		if (iter != data->end())
+		{
+			if (kindOf(name) == KindType::NONE)
+				Define(name, iter->second.second, str2KindType[iter->second.first]);
+			cout << "name: " << name << "\tindex: " << IndexOf(name) << endl;
+		}
+		identifiersInOrder.pop();
+	}
 }

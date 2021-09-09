@@ -1,4 +1,5 @@
 #include <iostream>
+#include <queue>
 #include <string>
 #include <unordered_map>
 
@@ -17,13 +18,15 @@ private:
 	unordered_map<string, pair<string, string>>* data;
 	unordered_map<string, Status>* classScope;
 	unordered_map<string, Status>* methodScope;
+	unordered_map<string, KindType> str2KindType;
 	int staticSegCount;
 	int fieldSegCount;
 	int argSegCount;
 	int varSegCount;
 	unordered_map<string, Status>::iterator getIter(string);
+	queue<string> identifiersInOrder;
 public:
-	SymbolTable();
+	SymbolTable(const queue<string>&);
 	~SymbolTable();
 	void startSubroutine();
 	void Define(string, string, KindType);

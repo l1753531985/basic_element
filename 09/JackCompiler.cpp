@@ -4,7 +4,7 @@
 #include "CompilationEngine.h"
 #include "SymbolTable.h"
 
-void getTokens(queue<pair<string, string>>& q)
+void getTokens(queue<pair<string, string>>& q, queue<string>& identifiers)
 {
 	JackTokenizer token{"./Main.jack"};
 	while (token.hasMoreTokens())
@@ -24,6 +24,7 @@ void getTokens(queue<pair<string, string>>& q)
 			case TokenType::IDENTIFIER:
 				tag = "identifier";	
 				singleToken = token.identifier();
+				identifiers.push(singleToken);
 				break;
 			case TokenType::INT_CONST:
 				tag = "integerConstant";	
@@ -47,14 +48,15 @@ void getTokens(queue<pair<string, string>>& q)
 int main()
 {
 	queue<pair<string, string>> tokens;
-	getTokens(tokens);
+	queue<string> identifiersInOrder;
+	getTokens(tokens, identifiersInOrder);
 	
 	int indentation = 4;
 	CompilationEngine ce{tokens, indentation, "test.xml"};
 	//ce.printAllTokens();
 	
 	// get symbolsTable and handover symbolTable moudle
-	SymbolTable st;
+	SymbolTable st{identifiersInOrder};
 	st.getData(ce.getSymbolsTable());
 	st.printData();
 
