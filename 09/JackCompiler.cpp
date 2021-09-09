@@ -2,6 +2,7 @@
 #include <unordered_map>
 #include "JackTokenizer.h"
 #include "CompilationEngine.h"
+#include "SymbolTable.h"
 
 void getTokens(queue<pair<string, string>>& q)
 {
@@ -52,9 +53,10 @@ int main()
 	CompilationEngine ce{tokens, indentation, "test.xml"};
 	//ce.printAllTokens();
 	
-	unordered_map<string, pair<string, string>>* symbolsOfTable{ce.getSymbolsTable()};
-	ce.printSymbolsTables(cout, symbolsOfTable);
-	delete symbolsOfTable;
+	// get symbolsTable and handover symbolTable moudle
+	SymbolTable st;
+	st.getData(ce.getSymbolsTable());
+	st.printData();
 
 	return 0;
 }

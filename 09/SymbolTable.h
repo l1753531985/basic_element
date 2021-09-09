@@ -1,3 +1,4 @@
+#include <iostream>
 #include <string>
 #include <unordered_map>
 
@@ -13,6 +14,7 @@ struct Status {
 
 class SymbolTable {
 private:
+	unordered_map<string, pair<string, string>>* data;
 	unordered_map<string, Status>* classScope;
 	unordered_map<string, Status>* methodScope;
 	int staticSegCount;
@@ -29,4 +31,7 @@ public:
 	KindType kindOf(string);
 	string TypeOf(string);
 	int IndexOf(string);
+	void getData(unordered_map<string, pair<string, string>>*);
+	//for test
+	void printData();
 };

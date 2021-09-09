@@ -5,7 +5,7 @@ CompilationEngine::CompilationEngine(const queue<pair<string, string>>& tokens, 
 {
 	this->tokens = tokens;
 
-	compileByToken->insert({{"static", CLASSVARDEC}, {"field", CLASSVARDEC}, {"constructor", SUBROUTINEDEC}, {"function", SUBROUTINEDEC}, {"method", SUBROUTINEDEC}, {"var", VAR}, {"if", IF}, {"while", WHILE}, {"do", DO}, {"return", RETURN}, {"let", LET}});
+	compileByToken->insert({{"static", C_CLASSVARDEC}, {"field", C_CLASSVARDEC}, {"constructor", C_SUBROUTINEDEC}, {"function", C_SUBROUTINEDEC}, {"method", C_SUBROUTINEDEC}, {"var", C_VAR}, {"if", C_IF}, {"while", C_WHILE}, {"do", C_DO}, {"return", C_RETURN}, {"let", C_LET}});
 	compileByTag->insert({{"keyword", T_KEYWORD}, {"symbol", T_SYMBOL}, {"identifier", T_IDENTIFIER}, {"integerConstant", T_INI_CONST}, {"stringConstant", T_STRING_CONST}});
 	ops->insert({"+", "-", "*", "/", "&amp;", "|", "&lt;", "&gt;", "="});
 
@@ -55,7 +55,7 @@ void CompilationEngine::advanceBeforeFlag(ostream& os, string flag, int indentat
 CompileType CompilationEngine::token2Type(string token)
 {
 	unordered_map<string, CompileType>::iterator iter = compileByToken->find(token);
-	if (iter == compileByToken->end()) return CompileType::NONE;
+	if (iter == compileByToken->end()) return CompileType::C_NONE;
 	return iter->second;
 }
 
@@ -110,13 +110,13 @@ void CompilationEngine::CompileClass(ostream& os, int indentation)
 	{
 		switch (token2Type(tokens.front().second))
 		{
-			case CLASSVARDEC:
+			case C_CLASSVARDEC:
 				CompileClassVarDec(os, indentation+indentationSize);
 				break;
-			case SUBROUTINEDEC:
+			case C_SUBROUTINEDEC:
 				CompileSubroutineDec(os, indentation+indentationSize);
 				break;
-			case NONE:
+			case C_NONE:
 				loopFlag = false;
 				break;
 			default:
@@ -158,17 +158,17 @@ void CompilationEngine::CompileSubroutineBody(ostream& os, int indentation)
 	{
 		switch (token2Type(tokens.front().second))
 		{
-			case CompileType::VAR:
+			case CompileType::C_VAR:
 				CompileVarDec(os, indentation+indentationSize);
 				break;
-			case CompileType::LET:
-			case CompileType::IF:
-			case CompileType::WHILE:
-			case CompileType::DO:
-			case CompileType::RETURN:
+			case CompileType::C_LET:
+			case CompileType::C_IF:
+			case CompileType::C_WHILE:
+			case CompileType::C_DO:
+			case CompileType::C_RETURN:
 				CompileStatements(os, indentation+indentationSize);
 				break;
-			case CompileType::NONE:
+			case CompileType::C_NONE:
 				loopFlag = false;
 				break;
 			default:
@@ -203,19 +203,19 @@ void CompilationEngine::CompileStatements(ostream& os, int indentation)
 	{
 		switch (token2Type(tokens.front().second))
 		{
-				case CompileType::LET:
+				case CompileType::C_LET:
 					CompileLet(os, indentation+indentationSize);
 					break;
-				case CompileType::IF:
+				case CompileType::C_IF:
 					CompileIf(os, indentation+indentationSize);
 					break;
-				case CompileType::WHILE:
+				case CompileType::C_WHILE:
 					CompileWhile(os, indentation+indentationSize);
 					break;
-				case CompileType::DO:
+				case CompileType::C_DO:
 					CompileDo(os, indentation+indentationSize);
 					break;
-				case CompileType::RETURN:
+				case CompileType::C_RETURN:
 					CompileReturn(os, indentation+indentationSize);
 					break;
 				default:

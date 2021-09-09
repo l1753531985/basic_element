@@ -14,8 +14,6 @@ using namespace std;
 
 enum TokenType {KEYWORD, SYMBOL, IDENTIFIER, INT_CONST, STRING_CONST};
 
-enum Status {STRSTART, STREND};
-
 class JackTokenizer {
 private:
 	string fileName;

@@ -1,7 +1,7 @@
 #include "SymbolTable.h"
 
 SymbolTable::SymbolTable()
-	: classScope{new unordered_map<string, Status>}, methodScope{new unordered_map<string, Status>}, staticSegCount{0}, fieldSegCount{0}, argSegCount{0}, varSegCount{0}
+	: classScope{new unordered_map<string, Status>}, methodScope{new unordered_map<string, Status>}, data{new unordered_map<string, pair<string, string>>}, staticSegCount{0}, fieldSegCount{0}, argSegCount{0}, varSegCount{0}
 {
 }
 
@@ -9,6 +9,7 @@ SymbolTable::~SymbolTable()
 {
 	delete classScope;
 	delete methodScope;
+	delete data;
 }
 
 void SymbolTable::startSubroutine()
@@ -101,3 +102,15 @@ int SymbolTable::IndexOf(string name)
 	return -1;
 }	
 
+void SymbolTable::getData(unordered_map<string, pair<string, string>>* resData)
+{
+	if (resData) data = resData;	
+}
+
+//for test
+void SymbolTable::printData()
+{
+	unordered_map<string, pair<string, string>>::iterator iter;
+	for (iter = data->begin(); iter != data->end(); iter++)
+		cout << "name: " << iter->first << "\tkind: " << iter->second.first << "\ttype: " << iter->second.second << endl;
+}
