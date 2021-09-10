@@ -58,7 +58,7 @@ int main()
 	// get symbolsTable and handover symbolTable moudle
 	SymbolTable st{identifiersInOrder};
 	st.getData(ce.getSymbolsTable());
-	st.printData();
+	//st.printData();
 
 	return 0;
 }
