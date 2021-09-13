@@ -1,13 +1,15 @@
 #include "SymbolTable.h"
 
-SymbolTable::SymbolTable(unordered_map<string, Status>* classScope, unordered_map<string, Status>* methodScope)
-	: classScope{classScope}, methodScope{methodScope}, staticSegCount{0}, fieldSegCount{0}, argSegCount{0}, varSegCount{0}
+SymbolTable::SymbolTable()
+	: classScope{new unordered_map<string, Status>}, methodScope{new unordered_map<string, Status>}, staticSegCount{0}, fieldSegCount{0}, argSegCount{0}, varSegCount{0}
 {
 	str2KindType.insert({{"static", KindType::STATIC}, {"field", KindType::FIELD}, {"argument", KindType::ARG}, {"var", KindType::VAR}});
 }
 
 SymbolTable::~SymbolTable()
 {
+	delete classScope;
+	delete methodScope;
 }
 
 void SymbolTable::startSubroutine()
@@ -17,6 +19,7 @@ void SymbolTable::startSubroutine()
 
 void SymbolTable::Define(string name, string type, KindType kind)
 {
+	if (kindOf(name) == KindType::NONE) return;
 	Status s;
 	s.type = type;	
 	s.kind = kind;
@@ -100,18 +103,20 @@ int SymbolTable::IndexOf(string name)
 	return -1;
 }	
 
-void SymbolTable::symbolTableOperate(unordered_map<string, pair<string, string>>* data, queue<string>& identifiers)
+
+KindType SymbolTable::str2Kind(string kind)
 {
-	while (!identifiers.empty())
-	{
-		string name = identifiers.front();
-		unordered_map<string, pair<string, string>>::iterator iter = data->find(name);
-		if (iter != data->end())
-		{
-			if (kindOf(name) == KindType::NONE)
-				Define(name, iter->second.second, str2KindType[iter->second.first]);
-		}
-		identifiers.pop();
-	}
+	return str2KindType[kind];
 }
 
+//for test
+void SymbolTable::printAllElem(ostream& os)
+{
+	cout << "count of classScope: " << classScope->size() << endl;
+	cout << "count of methodScope: " << methodScope->size() << endl;
+	unordered_map<string, Status>::iterator iter;
+	for (iter = classScope->begin(); iter != classScope->end(); iter++)
+		os << iter->first << ": " << iter->second.index << endl;
+	for (iter = methodScope->begin(); iter != methodScope->end(); iter++)
+		os << iter->first << ": " << iter->second.index << endl;
+}

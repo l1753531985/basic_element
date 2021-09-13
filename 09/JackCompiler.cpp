@@ -53,13 +53,13 @@ int main()
 	getTokens(tokens, identifiersInOrder);
 	
 	int indentation = 4;
-	CompilationEngine ce{tokens, indentation, "test.xml"};
+	SymbolTable st;
+	CompilationEngine ce{tokens, indentation, "test.xml", st};
+	st.printAllElem(cout);
 	//ce.printAllTokens();
 	
 	// create object vmwriter for store data and code write
-	VMWriter vmw;
-	SymbolTable st{vmw.getClassScopePtr(), vmw.getMethodScopePtr()};
-	st.symbolTableOperate(ce.getSymbolsTable(), identifiersInOrder);
+	//VMWriter vmw;
 	// for test
 	//vmw.printScope(cout);
 

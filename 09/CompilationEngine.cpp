@@ -1,7 +1,7 @@
 #include "CompilationEngine.h"
 
-CompilationEngine::CompilationEngine(const queue<pair<string, string>>& tokens, int val, string name)
-	: compileByToken{new unordered_map<string, CompileType>}, compileByTag{new unordered_map<string, TagType>}, ops{new unordered_set<string>}, indentationSize{val}, filename{name}
+CompilationEngine::CompilationEngine(const queue<pair<string, string>>& tokens, int val, string name, SymbolTable& st)
+	: compileByToken{new unordered_map<string, CompileType>}, compileByTag{new unordered_map<string, TagType>}, ops{new unordered_set<string>}, indentationSize{val}, filename{name}, symbolTable{st}
 {
 	this->tokens = tokens;
 
@@ -418,8 +418,6 @@ void CompilationEngine::getSymbolsFromDec(ostream& os, int indentation)
 	string type = tokens.front().second;
 	tokens.pop();
 
-	pair<string, string> status{kind, type};
-
 	while (tokens.front().second != ";")
 	{
 		if (tokens.front().second == ",")
@@ -430,7 +428,7 @@ void CompilationEngine::getSymbolsFromDec(ostream& os, int indentation)
 		string symbolName = tokens.front().second;
 		tokens.pop();
 		
-		symbolsInTables[symbolName] = status;
+		symbolTable.Define(symbolName, type, symbolTable.str2Kind(kind));
 	}
 }
 
@@ -447,19 +445,14 @@ void CompilationEngine::getSymbolsFromParaList(ostream& os, int indentation)
 		string type = tokens.front().second;
 		tokens.pop();
 
-		pair<string, string> status{kind, type};
-
 		// get identifier itself 
 		printTokenInXml(os, indentation);
 		string symbolName = tokens.front().second;
 		tokens.pop();
 
-		symbolsInTables[symbolName] = status;
+		cout << "mmmmmmmmmmmmm" << endl;
+		symbolTable.Define(symbolName, type, symbolTable.str2Kind(kind));
 	}
 }
 
-unordered_map<string, pair<string, string>>* CompilationEngine::getSymbolsTable()
-{
-	return new unordered_map<string, pair<string, string>>{symbolsInTables}; 	
-}
 

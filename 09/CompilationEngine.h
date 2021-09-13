@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <unistd.h>
 #include <fstream>
+#include "SymbolTable.h"
 
 using namespace std;
 
@@ -35,8 +36,9 @@ private:
 	unordered_map<string, pair<string, string>> symbolsInTables;
 	void getSymbolsFromDec(ostream&, int);
 	void getSymbolsFromParaList(ostream&, int);
+	SymbolTable& symbolTable;
 public:
-	CompilationEngine(const queue<pair<string, string>>&, int, string);
+	CompilationEngine(const queue<pair<string, string>>&, int, string, SymbolTable&);
 	~CompilationEngine();
 	void CompileClass(ostream&, int);
 	void CompileClassVarDec(ostream&, int);
@@ -53,7 +55,6 @@ public:
 	void CompileExpression(ostream&, int);
 	void CompileTerm(ostream&, int); 
 	void CompileExpressionList(ostream&, int);
-	unordered_map<string, pair<string, string>>* getSymbolsTable();
 	//fot test
 	void printAllTokens();
 	void printSymbolsTables(ostream&, unordered_map<string, pair<string, string>>*);
