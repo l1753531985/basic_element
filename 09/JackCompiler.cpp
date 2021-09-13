@@ -3,6 +3,7 @@
 #include "JackTokenizer.h"
 #include "CompilationEngine.h"
 #include "SymbolTable.h"
+#include "VMWriter.h"
 
 void getTokens(queue<pair<string, string>>& q, queue<string>& identifiers)
 {
@@ -55,10 +56,12 @@ int main()
 	CompilationEngine ce{tokens, indentation, "test.xml"};
 	//ce.printAllTokens();
 	
-	// get symbolsTable and handover symbolTable moudle
-	SymbolTable st{identifiersInOrder};
-	st.getData(ce.getSymbolsTable());
-	//st.printData();
+	// create object vmwriter for store data 
+	VMWriter vmw;
+	// handover pointer and 
+	SymbolTable st{vmw.getClassScopePtr(), vmw.getMethodScopePtr()};
+	st.giveDataForStore(ce.getSymbolsTable(), identifiersInOrder);
+	//vmw.printScope(cout);
 
 	return 0;
 }

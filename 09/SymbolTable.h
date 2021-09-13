@@ -2,20 +2,12 @@
 #include <queue>
 #include <string>
 #include <unordered_map>
+#include "Status.h"
 
 using namespace std;
 
-enum KindType {STATIC, FIELD, ARG, VAR, NONE};
-
-struct Status {
-	string type;
-	KindType kind; 
-	int index;
-};
-
 class SymbolTable {
 private:
-	unordered_map<string, pair<string, string>>* data;
 	unordered_map<string, Status>* classScope;
 	unordered_map<string, Status>* methodScope;
 	unordered_map<string, KindType> str2KindType;
@@ -24,9 +16,8 @@ private:
 	int argSegCount;
 	int varSegCount;
 	unordered_map<string, Status>::iterator getIter(string);
-	queue<string> identifiersInOrder;
 public:
-	SymbolTable(const queue<string>&);
+	SymbolTable(unordered_map<string, Status>*, unordered_map<string, Status>*);
 	~SymbolTable();
 	void startSubroutine();
 	void Define(string, string, KindType);
@@ -34,7 +25,5 @@ public:
 	KindType kindOf(string);
 	string TypeOf(string);
 	int IndexOf(string);
-	void getData(unordered_map<string, pair<string, string>>*);
-	//for test
-	void printData();
+	void giveDataForStore(unordered_map<string, pair<string, string>>*, queue<string>&);
 };
