@@ -25,5 +25,5 @@ public:
 	KindType kindOf(string);
 	string TypeOf(string);
 	int IndexOf(string);
-	void giveDataForStore(unordered_map<string, pair<string, string>>*, queue<string>&);
+	void symbolTableOperate(unordered_map<string, pair<string, string>>*, queue<string>&);
 };

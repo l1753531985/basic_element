@@ -56,11 +56,11 @@ int main()
 	CompilationEngine ce{tokens, indentation, "test.xml"};
 	//ce.printAllTokens();
 	
-	// create object vmwriter for store data 
+	// create object vmwriter for store data and code write
 	VMWriter vmw;
-	// handover pointer and 
 	SymbolTable st{vmw.getClassScopePtr(), vmw.getMethodScopePtr()};
-	st.giveDataForStore(ce.getSymbolsTable(), identifiersInOrder);
+	st.symbolTableOperate(ce.getSymbolsTable(), identifiersInOrder);
+	// for test
 	//vmw.printScope(cout);
 
 	return 0;

@@ -100,7 +100,7 @@ int SymbolTable::IndexOf(string name)
 	return -1;
 }	
 
-void SymbolTable::giveDataForStore(unordered_map<string, pair<string, string>>* data, queue<string>& identifiers)
+void SymbolTable::symbolTableOperate(unordered_map<string, pair<string, string>>* data, queue<string>& identifiers)
 {
 	while (!identifiers.empty())
 	{
