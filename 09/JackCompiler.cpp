@@ -60,9 +60,6 @@ int main()
 	//ce.printAllTokens();
 	//st.printAllElem(cout);
 	
-	//VMWriter vmw;
-	// for test
-	//vmw.printScope(cout);
-
+	VMWriter vmw{"test.vm"};
 	return 0;
 }

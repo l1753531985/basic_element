@@ -1,6 +1,7 @@
 #include "VMWriter.h"
 
-VMWriter::VMWriter()
+VMWriter::VMWriter(string fileName)
+	:fileName{fileName}
 {
 }
 
@@ -8,7 +9,7 @@ VMWriter::~VMWriter()
 {
 }
 
-void VMWriter::Constructor(string fileName)
+void VMWriter::Constructor()
 {
 	ofile.open(fileName);
 }
@@ -19,14 +20,3 @@ void VMWriter::close()
 		ofile.close();
 }
 
-// for test
-void VMWriter::printScope(ostream& os)
-{
-	/*
-	unordered_map<string, Status>::iterator iter;
-	for (iter = classScope->begin(); iter != classScope->end(); iter++)
-		os << "name: " << iter->first << "\tkind: " << Status::KindType2Str(iter->second.kind) << "\tindex: " << iter->second.index << endl;
-	for (iter = methodScope->begin(); iter != methodScope->end(); iter++)
-		os << "name: " << iter->first << "\tkind: " << Status::KindType2Str(iter->second.kind) << "\tindex: " << iter->second.index << endl;
-	*/
-}

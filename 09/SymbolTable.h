@@ -36,23 +36,23 @@ class SymbolTable {
 private:
 	unordered_map<string, Status>* classScope;
 	unordered_map<string, Status>* methodScope;
-	unordered_map<string, KindType> str2KindType;
+	const unordered_map<string, KindType> str2KindType;
 	int staticSegCount;
 	int fieldSegCount;
 	int argSegCount;
 	int varSegCount;
-	unordered_map<string, Status>::iterator getIter(string);
+	unordered_map<string, Status>::const_iterator getIter(string) const;
 public:
 	SymbolTable();
 	~SymbolTable();
-	void startSubroutine();
+	void startSubroutine() const;
 	void Define(string, string, KindType);
-	int varCount(KindType);
-	KindType kindOf(string);
-	string TypeOf(string);
-	int IndexOf(string);
-	KindType str2Kind(string);
+	int varCount(KindType) const;
+	KindType kindOf(string) const;
+	string TypeOf(string) const;
+	int IndexOf(string) const;
+	KindType str2Kind(string) const;
 	//for test
-	void printAllElem(ostream& os);
+	void printAllElem(ostream& os) const;
 };
 #endif

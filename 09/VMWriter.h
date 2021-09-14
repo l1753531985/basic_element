@@ -1,6 +1,7 @@
 #include <fstream>
 #include <unordered_map>
 #include <iostream>
+#include "SymbolTable.h"
 
 using namespace std;
 
@@ -9,10 +10,11 @@ private:
 	enum Segment {CONST, ARG, LOCAL, STATIC, THIS, THAT, POINTER, TEMP};
 	enum Command {ADD, SUB, NEG, EQ, GT, LT, AND, OR, NOT};
 	ofstream ofile;
+	string fileName;
 public:
-	VMWriter();
+	VMWriter(string);
 	~VMWriter();
-	void Constructor(string);
+	void Constructor();
 	void writePush(Segment, int);
 	void writePop(Segment, int);
 	void writeArithmetic(Command); 
@@ -23,6 +25,4 @@ public:
 	void writeFunction(string, int);
 	void writeReturn();
 	void close();
-	//for test
-	void printScope(ostream&);
 };

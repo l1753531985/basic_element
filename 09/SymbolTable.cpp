@@ -1,9 +1,8 @@
 #include "SymbolTable.h"
 
 SymbolTable::SymbolTable()
-	: classScope{new unordered_map<string, Status>}, methodScope{new unordered_map<string, Status>}, staticSegCount{0}, fieldSegCount{0}, argSegCount{0}, varSegCount{0}
+	: classScope{new unordered_map<string, Status>}, methodScope{new unordered_map<string, Status>}, staticSegCount{0}, fieldSegCount{0}, argSegCount{0}, varSegCount{0}, str2KindType{{"static", KindType::STATIC}, {"field", KindType::FIELD}, {"argument", KindType::ARG}, {"var", KindType::VAR}}
 {
-	str2KindType.insert({{"static", KindType::STATIC}, {"field", KindType::FIELD}, {"argument", KindType::ARG}, {"var", KindType::VAR}});
 }
 
 SymbolTable::~SymbolTable()
@@ -12,7 +11,7 @@ SymbolTable::~SymbolTable()
 	delete methodScope;
 }
 
-void SymbolTable::startSubroutine()
+void SymbolTable::startSubroutine() const
 {
 	methodScope->clear();
 }
@@ -51,7 +50,7 @@ void SymbolTable::Define(string name, string type, KindType kind)
 	}
 }
 
-int SymbolTable::varCount(KindType kind)
+int SymbolTable::varCount(KindType kind) const
 {
 	switch (kind)
 	{
@@ -66,7 +65,7 @@ int SymbolTable::varCount(KindType kind)
 	}
 }
 
-unordered_map<string, Status>::iterator SymbolTable::getIter(string name)
+unordered_map<string, Status>::const_iterator SymbolTable::getIter(string name) const
 {
 	unordered_map<string, Status>::iterator iter = classScope->find(name);	
 	if (iter != classScope->end())
@@ -79,38 +78,38 @@ unordered_map<string, Status>::iterator SymbolTable::getIter(string name)
 	return iter;
 }
 
-KindType SymbolTable::kindOf(string name)
+KindType SymbolTable::kindOf(string name) const
 {
-	unordered_map<string, Status>::iterator iter = getIter(name);
+	unordered_map<string, Status>::const_iterator iter = getIter(name);
 	if (iter != methodScope->end())
 		return (iter->second).kind;
 	return KindType::NONE;
 }
 
-string SymbolTable::TypeOf(string name)
+string SymbolTable::TypeOf(string name) const
 {
-	unordered_map<string, Status>::iterator iter = getIter(name);
+	unordered_map<string, Status>::const_iterator iter = getIter(name);
 	if (iter != methodScope->end())
 		return (iter->second).type;
 	return "";
 }
 
-int SymbolTable::IndexOf(string name)
+int SymbolTable::IndexOf(string name) const
 {
-	unordered_map<string, Status>::iterator iter = getIter(name);
+	unordered_map<string, Status>::const_iterator iter = getIter(name);
 	if (iter != methodScope->end())
 		return (iter->second).index;
 	return -1;
 }	
 
 
-KindType SymbolTable::str2Kind(string kind)
+KindType SymbolTable::str2Kind(string kind) const 
 {
-	return str2KindType[kind];
+	return str2KindType.at(kind);
 }
 
 //for test
-void SymbolTable::printAllElem(ostream& os)
+void SymbolTable::printAllElem(ostream& os) const
 {
 	cout << "count of classScope: " << classScope->size() << endl;
 	cout << "count of methodScope: " << methodScope->size() << endl;
