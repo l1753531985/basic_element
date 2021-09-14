@@ -20,3 +20,7 @@ void VMWriter::close()
 		ofile.close();
 }
 
+void VMWriter::writeFunction(string funcName, int nargs)
+{
+	ofile << "function " << funcName << " " << nargs << endl;
+}

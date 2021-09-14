@@ -55,11 +55,12 @@ int main()
 	int indentation = 4;
 	// symbolTable is a data struct for store symbols
 	SymbolTable st;
-	CompilationEngine ce{tokens, indentation, "test.xml", st};
+	VMWriter vmw{"test.vm"};
+	CompilationEngine ce{tokens, indentation, "test.xml", st, vmw};
+	//ce.printSymbolsTables(cout);
 	// for test
 	//ce.printAllTokens();
 	//st.printAllElem(cout);
 	
-	VMWriter vmw{"test.vm"};
 	return 0;
 }

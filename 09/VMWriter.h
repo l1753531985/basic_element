@@ -1,3 +1,6 @@
+#ifndef __VMWRITER__
+#define __VMWRITER__
+
 #include <fstream>
 #include <unordered_map>
 #include <iostream>
@@ -26,3 +29,5 @@ public:
 	void writeReturn();
 	void close();
 };
+
+#endif

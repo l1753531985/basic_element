@@ -1,13 +1,15 @@
 #include "CompilationEngine.h"
 
-CompilationEngine::CompilationEngine(const queue<pair<string, string>>& tokens, int val, string name, SymbolTable& st)
-	: compileByToken{new unordered_map<string, CompileType>}, compileByTag{new unordered_map<string, TagType>}, ops{new unordered_set<string>}, indentationSize{val}, filename{name}, symbolTable{st}
+CompilationEngine::CompilationEngine(const queue<pair<string, string>>& tokens, int val, string name, SymbolTable& st, VMWriter& vmw)
+	: compileByToken{new unordered_map<string, CompileType>}, compileByTag{new unordered_map<string, TagType>}, ops{new unordered_set<string>}, indentationSize{val}, filename{name}, symbolTable{st}, vmwrite{vmw}
 {
 	this->tokens = tokens;
 
 	compileByToken->insert({{"static", C_CLASSVARDEC}, {"field", C_CLASSVARDEC}, {"constructor", C_SUBROUTINEDEC}, {"function", C_SUBROUTINEDEC}, {"method", C_SUBROUTINEDEC}, {"var", C_VAR}, {"if", C_IF}, {"while", C_WHILE}, {"do", C_DO}, {"return", C_RETURN}, {"let", C_LET}});
 	compileByTag->insert({{"keyword", T_KEYWORD}, {"symbol", T_SYMBOL}, {"identifier", T_IDENTIFIER}, {"integerConstant", T_INI_CONST}, {"stringConstant", T_STRING_CONST}});
 	ops->insert({"+", "-", "*", "/", "&amp;", "|", "&lt;", "&gt;", "="});
+
+	vmwrite.Constructor();
 
 	ofile.open(filename);
 	CompileClass(ofile, 0);
@@ -94,16 +96,19 @@ void CompilationEngine::popBeforeFlag(string flag)
 }
 
 //for test
-void CompilationEngine::printSymbolsTables(ostream& os, unordered_map<string, pair<string, string>>* table)
+void CompilationEngine::printSymbolsTables(ostream& os)
 {
-	unordered_map<string, pair<string, string>>::iterator iter;
-	for (iter = table->begin(); iter != table->end(); iter++)
-		os << "name: " << iter->first << "\tkind: " << iter->second.first << "\ttype: " << iter->second.second << endl;
+	symbolTable.printAllElem(os);
 }
 
 void CompilationEngine::CompileClass(ostream& os, int indentation)
 {
 	os << setw(indentation) << " " << "<class>" << endl;
+	// pop keyword
+	printTokenInXml(os, indentation+indentationSize);
+	tokens.pop();
+	// get class name
+	string className = tokens.front().second;
 	advanceUntilFlag(os, "{", indentation+indentationSize);
 	bool loopFlag = true;
 	while (loopFlag)
@@ -114,7 +119,7 @@ void CompilationEngine::CompileClass(ostream& os, int indentation)
 				CompileClassVarDec(os, indentation+indentationSize);
 				break;
 			case C_SUBROUTINEDEC:
-				CompileSubroutineDec(os, indentation+indentationSize);
+				CompileSubroutineDec(os, indentation+indentationSize, className);
 				break;
 			case C_NONE:
 				loopFlag = false;
@@ -139,14 +144,25 @@ void CompilationEngine::CompileClassVarDec(ostream& os, int indentation)
 	os << setw(indentation) << " " << "</classVarDec>" << endl;
 }
 
-void CompilationEngine::CompileSubroutineDec(ostream& os, int indentation)
+void CompilationEngine::CompileSubroutineDec(ostream& os, int indentation, string className)
 {
 	os << setw(indentation) << " " << "<subroutineDec>" << endl;
+	// pop keyword
+	printTokenInXml(os, indentation+indentationSize); 
+	tokens.pop();
+	// pop return type
+	printTokenInXml(os, indentation+indentationSize); 
+	tokens.pop();
+	// get function name
+	string functionName = className + "." + tokens.front().second;
 	advanceUntilFlag(os, "(", indentation+indentationSize);
-	CompileParameterList(os, indentation+indentationSize);
+	// get count of arguments
+	int nargs = CompileParameterList(os, indentation+indentationSize);
 	advanceUntilFlag(os, ")", indentation+indentationSize);
 	CompileSubroutineBody(os, indentation+indentationSize);
 	os << setw(indentation) << " " << "</subroutineDec>" << endl;
+	// create code
+	vmwrite.writeFunction(functionName, nargs);
 }
 
 void CompilationEngine::CompileSubroutineBody(ostream& os, int indentation)
@@ -179,12 +195,11 @@ void CompilationEngine::CompileSubroutineBody(ostream& os, int indentation)
 	os << setw(indentation) << " " << "</subroutineBody>" << endl;
 }
 
-void CompilationEngine::CompileParameterList(ostream& os, int indentation)
+int CompilationEngine::CompileParameterList(ostream& os, int indentation)
 {
 	os << setw(indentation) << " " << "<parameterList>" << endl;
-	getSymbolsFromParaList(os, indentation);
-	advanceBeforeFlag(os, ")", indentation);
-	os << setw(indentation) << " " << "</parameterList>" << endl;
+	return getSymbolsFromParaList(os, indentation);
+	// advanceBeforeFlag(os, ")", indentation);
 }
 
 void CompilationEngine::CompileVarDec(ostream& os, int indentation)
@@ -432,9 +447,10 @@ void CompilationEngine::getSymbolsFromDec(ostream& os, int indentation)
 	}
 }
 
-void CompilationEngine::getSymbolsFromParaList(ostream& os, int indentation)
+int CompilationEngine::getSymbolsFromParaList(ostream& os, int indentation)
 {
 	string kind = "argument";
+	int count = 0;
 	while (tokens.front().second != ")")
 	{
 		if (tokens.front().second == ",")
@@ -451,7 +467,9 @@ void CompilationEngine::getSymbolsFromParaList(ostream& os, int indentation)
 		tokens.pop();
 
 		symbolTable.Define(symbolName, type, symbolTable.str2Kind(kind));
+		count++;
 	}
+	return count;
 }
 
 

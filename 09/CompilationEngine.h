@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <fstream>
 #include "SymbolTable.h"
+#include "VMWriter.h"
 
 using namespace std;
 
@@ -35,16 +36,17 @@ private:
 	ofstream ofile;
 	unordered_map<string, pair<string, string>> symbolsInTables;
 	void getSymbolsFromDec(ostream&, int);
-	void getSymbolsFromParaList(ostream&, int);
+	int getSymbolsFromParaList(ostream&, int);
 	SymbolTable& symbolTable;
+	VMWriter& vmwrite;
 public:
-	CompilationEngine(const queue<pair<string, string>>&, int, string, SymbolTable&);
+	CompilationEngine(const queue<pair<string, string>>&, int, string, SymbolTable&, VMWriter&);
 	~CompilationEngine();
 	void CompileClass(ostream&, int);
 	void CompileClassVarDec(ostream&, int);
-	void CompileSubroutineDec(ostream&, int);
+	void CompileSubroutineDec(ostream&, int, string);
 	void CompileSubroutineBody(ostream&, int);
-	void CompileParameterList(ostream&, int);
+	int CompileParameterList(ostream&, int);
 	void CompileVarDec(ostream&, int);
 	void CompileStatements(ostream&, int);
 	void CompileLet(ostream&, int);
@@ -57,5 +59,5 @@ public:
 	void CompileExpressionList(ostream&, int);
 	//fot test
 	void printAllTokens();
-	void printSymbolsTables(ostream&, unordered_map<string, pair<string, string>>*);
+	void printSymbolsTables(ostream& os);
 };
