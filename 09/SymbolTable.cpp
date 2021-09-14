@@ -19,7 +19,7 @@ void SymbolTable::startSubroutine()
 
 void SymbolTable::Define(string name, string type, KindType kind)
 {
-	if (kindOf(name) == KindType::NONE) return;
+	if (kindOf(name) != KindType::NONE) return;
 	Status s;
 	s.type = type;	
 	s.kind = kind;

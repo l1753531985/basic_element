@@ -450,7 +450,6 @@ void CompilationEngine::getSymbolsFromParaList(ostream& os, int indentation)
 		string symbolName = tokens.front().second;
 		tokens.pop();
 
-		cout << "mmmmmmmmmmmmm" << endl;
 		symbolTable.Define(symbolName, type, symbolTable.str2Kind(kind));
 	}
 }
