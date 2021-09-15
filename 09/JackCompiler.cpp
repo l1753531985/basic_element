@@ -57,7 +57,6 @@ int main()
 	SymbolTable st;
 	VMWriter vmw{"test.vm"};
 	CompilationEngine ce{tokens, indentation, "test.xml", st, vmw};
-	//ce.printSymbolsTables(cout);
 	// for test
 	//ce.printAllTokens();
 	//st.printAllElem(cout);

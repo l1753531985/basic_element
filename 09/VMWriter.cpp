@@ -1,7 +1,7 @@
 #include "VMWriter.h"
 
 VMWriter::VMWriter(string fileName)
-	:fileName{fileName}
+	:fileName{fileName}, seg2Str{{S_CONST, "constant"}, {S_ARG, "argument"}, {S_LOCAL, "local"}, {S_STATIC, "static"}, {S_THIS, "this"}, {S_THAT, "that"}, {S_POINTER, "pointer"}, {S_TEMP, "temp"}}
 {
 }
 
@@ -24,3 +24,19 @@ void VMWriter::writeFunction(string funcName, int nargs)
 {
 	ofile << "function " << funcName << " " << nargs << endl;
 }
+
+void VMWriter::writeReturn()
+{
+	ofile << "return" << endl;
+}
+
+void VMWriter::writePush(Segment seg, int index)
+{
+	ofile << "push " << seg2Str[seg] << " " << index << endl;
+}
+
+void VMWriter::writeCall(string name, int nargs)
+{
+	ofile << "call " << name << " " << nargs << endl;
+}
+

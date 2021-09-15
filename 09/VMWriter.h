@@ -8,12 +8,14 @@
 
 using namespace std;
 
+enum Segment {S_CONST, S_ARG, S_LOCAL, S_STATIC, S_THIS, S_THAT, S_POINTER, S_TEMP};
+
 class VMWriter {
 private:
-	enum Segment {CONST, ARG, LOCAL, STATIC, THIS, THAT, POINTER, TEMP};
 	enum Command {ADD, SUB, NEG, EQ, GT, LT, AND, OR, NOT};
 	ofstream ofile;
 	string fileName;
+	unordered_map<Segment, string> seg2Str;
 public:
 	VMWriter(string);
 	~VMWriter();

@@ -36,7 +36,7 @@ private:
 	ofstream ofile;
 	unordered_map<string, pair<string, string>> symbolsInTables;
 	void getSymbolsFromDec(ostream&, int);
-	int getSymbolsFromParaList(ostream&, int);
+	void getSymbolsFromParaList(ostream&, int);
 	SymbolTable& symbolTable;
 	VMWriter& vmwrite;
 public:
@@ -46,7 +46,7 @@ public:
 	void CompileClassVarDec(ostream&, int);
 	void CompileSubroutineDec(ostream&, int, string);
 	void CompileSubroutineBody(ostream&, int);
-	int CompileParameterList(ostream&, int);
+	void CompileParameterList(ostream&, int);
 	void CompileVarDec(ostream&, int);
 	void CompileStatements(ostream&, int);
 	void CompileLet(ostream&, int);

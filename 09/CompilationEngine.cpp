@@ -157,12 +157,12 @@ void CompilationEngine::CompileSubroutineDec(ostream& os, int indentation, strin
 	string functionName = className + "." + tokens.front().second;
 	advanceUntilFlag(os, "(", indentation+indentationSize);
 	// get count of arguments
-	int nargs = CompileParameterList(os, indentation+indentationSize);
+	CompileParameterList(os, indentation+indentationSize);
+	// create code
+	vmwrite.writeFunction(functionName, symbolTable.varCount(KindType::VAR));
 	advanceUntilFlag(os, ")", indentation+indentationSize);
 	CompileSubroutineBody(os, indentation+indentationSize);
 	os << setw(indentation) << " " << "</subroutineDec>" << endl;
-	// create code
-	vmwrite.writeFunction(functionName, nargs);
 }
 
 void CompilationEngine::CompileSubroutineBody(ostream& os, int indentation)
@@ -195,11 +195,10 @@ void CompilationEngine::CompileSubroutineBody(ostream& os, int indentation)
 	os << setw(indentation) << " " << "</subroutineBody>" << endl;
 }
 
-int CompilationEngine::CompileParameterList(ostream& os, int indentation)
+void CompilationEngine::CompileParameterList(ostream& os, int indentation)
 {
 	os << setw(indentation) << " " << "<parameterList>" << endl;
-	return getSymbolsFromParaList(os, indentation);
-	// advanceBeforeFlag(os, ")", indentation);
+	getSymbolsFromParaList(os, indentation);
 }
 
 void CompilationEngine::CompileVarDec(ostream& os, int indentation)
@@ -248,6 +247,7 @@ void CompilationEngine::CompileLet(ostream& os, int indentation)
 	printTokenInXml(os, indentation+indentationSize);
 	tokens.pop();
 	printTokenInXml(os, indentation+indentationSize);
+	string name = tokens.front().second;
 	tokens.pop();
 
 	if (tokens.front().second == "[")
@@ -342,9 +342,11 @@ void CompilationEngine::CompileExpression(ostream& os, int indentation)
 void CompilationEngine::CompileTerm(ostream& os, int indentation)
 {
 	os << setw(indentation) << " " << "<term>" << endl;
+	string temp = "";
 	switch(tag2Type(tokens.front().first))
 	{
 		case T_INI_CONST:
+			vmwrite.writePush(Segment::S_CONST, atoi(tokens.front().second.c_str()));
 		case T_KEYWORD:
 		case T_STRING_CONST:
 			printTokenInXml(os, indentation+indentationSize);
@@ -352,6 +354,7 @@ void CompilationEngine::CompileTerm(ostream& os, int indentation)
 			break;
 		case T_IDENTIFIER:
 			printTokenInXml(os, indentation+indentationSize);
+			temp = tokens.front().second;
 			tokens.pop();
 			if (tokens.front().second == "[")
 			{
@@ -367,6 +370,13 @@ void CompilationEngine::CompileTerm(ostream& os, int indentation)
 			}
 			else if (tokens.front().second == ".")
 			{
+				// print char .
+				printTokenInXml(os, indentation+indentationSize);
+				temp += tokens.front().second;
+				tokens.pop();
+				// print subroutine name
+				temp += tokens.front().second;
+				vmwrite.writeCall(temp, 1);
 				CompileSubroutineCall(os, indentation+indentationSize);
 			}
 			break;
@@ -447,10 +457,9 @@ void CompilationEngine::getSymbolsFromDec(ostream& os, int indentation)
 	}
 }
 
-int CompilationEngine::getSymbolsFromParaList(ostream& os, int indentation)
+void CompilationEngine::getSymbolsFromParaList(ostream& os, int indentation)
 {
 	string kind = "argument";
-	int count = 0;
 	while (tokens.front().second != ")")
 	{
 		if (tokens.front().second == ",")
@@ -467,9 +476,7 @@ int CompilationEngine::getSymbolsFromParaList(ostream& os, int indentation)
 		tokens.pop();
 
 		symbolTable.Define(symbolName, type, symbolTable.str2Kind(kind));
-		count++;
 	}
-	return count;
 }
 
 
