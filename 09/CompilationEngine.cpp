@@ -1,7 +1,7 @@
 #include "CompilationEngine.h"
 
-CompilationEngine::CompilationEngine(const queue<pair<string, string>>& tokens, int val, string name, SymbolTable& st, VMWriter& vmw)
-	: compileByToken{new unordered_map<string, CompileType>}, compileByTag{new unordered_map<string, TagType>}, ops{new unordered_set<string>}, indentationSize{val}, filename{name}, symbolTable{st}, vmwrite{vmw}
+CompilationEngine::CompilationEngine(const queue<pair<string, string>>& tokens, int val, string name, SymbolTable& st, VMWriter& vmw, bool writeFlag)
+	: compileByToken{new unordered_map<string, CompileType>}, compileByTag{new unordered_map<string, TagType>}, ops{new unordered_set<string>}, indentationSize{val}, filename{name}, symbolTable{st}, vmwrite{vmw}, vmWriteFlag{writeFlag} 
 {
 	this->tokens = tokens;
 
@@ -9,7 +9,7 @@ CompilationEngine::CompilationEngine(const queue<pair<string, string>>& tokens, 
 	compileByTag->insert({{"keyword", T_KEYWORD}, {"symbol", T_SYMBOL}, {"identifier", T_IDENTIFIER}, {"integerConstant", T_INI_CONST}, {"stringConstant", T_STRING_CONST}});
 	ops->insert({"+", "-", "*", "/", "&amp;", "|", "&lt;", "&gt;", "="});
 
-	vmwrite.Constructor();
+	if (vmWriteFlag) vmwrite.Constructor();
 
 	ofile.open(filename);
 	CompileClass(ofile, 0);
@@ -23,13 +23,15 @@ CompilationEngine::~CompilationEngine()
 	delete compileByToken;
 	delete compileByTag;
 	delete ops;
+	if (vmWriteFlag) vmwrite.close();
 }
 
-void CompilationEngine::printTokenInXml(ostream& os, int indentation)
+string CompilationEngine::printTokenInXml(ostream& os, int indentation)
 {
 	os << setw(indentation) << " " << "<" << tokens.front().first << ">" ;
 	os << " " << tokens.front().second << " ";
 	os << "</" << tokens.front().first << ">" << endl;
+	return tokens.front().second;
 }
 
 // print all elements and flag
@@ -139,7 +141,7 @@ void CompilationEngine::CompileClass(ostream& os, int indentation)
 void CompilationEngine::CompileClassVarDec(ostream& os, int indentation)
 {
 	os << setw(indentation) << " " << "<classVarDec>" << endl;
-	getSymbolsFromDec(os, indentation+indentationSize);
+	if (!vmWriteFlag) getSymbolsFromDec(os, indentation+indentationSize);
 	advanceUntilFlag(os, ";", indentation+indentationSize);
 	os << setw(indentation) << " " << "</classVarDec>" << endl;
 }
@@ -155,11 +157,10 @@ void CompilationEngine::CompileSubroutineDec(ostream& os, int indentation, strin
 	tokens.pop();
 	// get function name
 	string functionName = className + "." + tokens.front().second;
-	advanceUntilFlag(os, "(", indentation+indentationSize);
-	// get count of arguments
-	CompileParameterList(os, indentation+indentationSize);
 	// create code
-	vmwrite.writeFunction(functionName, symbolTable.varCount(KindType::VAR));
+	if (vmWriteFlag) vmwrite.writeFunction(functionName, symbolTable.varCount(KindType::VAR));
+	advanceUntilFlag(os, "(", indentation+indentationSize);
+	CompileParameterList(os, indentation+indentationSize);
 	advanceUntilFlag(os, ")", indentation+indentationSize);
 	CompileSubroutineBody(os, indentation+indentationSize);
 	os << setw(indentation) << " " << "</subroutineDec>" << endl;
@@ -198,13 +199,13 @@ void CompilationEngine::CompileSubroutineBody(ostream& os, int indentation)
 void CompilationEngine::CompileParameterList(ostream& os, int indentation)
 {
 	os << setw(indentation) << " " << "<parameterList>" << endl;
-	getSymbolsFromParaList(os, indentation);
+	if (!vmWriteFlag) getSymbolsFromParaList(os, indentation);
 }
 
 void CompilationEngine::CompileVarDec(ostream& os, int indentation)
 {
 	os << setw(indentation) << " " << "<varDec>" << endl;
-	getSymbolsFromDec(os, indentation+indentationSize);
+	if (!vmWriteFlag) getSymbolsFromDec(os, indentation+indentationSize);
 	advanceUntilFlag(os, ";", indentation+indentationSize);
 	os << setw(indentation) << " " << "</varDec>" << endl;
 }
@@ -279,9 +280,20 @@ void CompilationEngine::CompileDo(ostream& os, int indentation)
 	//print keyword
 	printTokenInXml(os, indentation+indentationSize);
 	tokens.pop();
-	CompileSubroutineCall(os, indentation+indentationSize);	
+
+	// print className and . 
+	string subrountineName = "";
+	for (int i = 0; i < 2; i++)
+	{
+		subrountineName += printTokenInXml(os, indentation+indentationSize);
+		tokens.pop();
+	}
+	subrountineName += tokens.front().second;
+	int nargs = CompileSubroutineCall(os, indentation+indentationSize);	
 	advanceUntilFlag(os, ";", indentation+indentationSize);
 	os << setw(indentation) << " " << "</doStatement>" << endl;
+	if (vmWriteFlag) vmwrite.writeCall(subrountineName, nargs);
+	// cout << "name: " << subrountineName << "\targs: " << nargs << endl;
 }
 
 void CompilationEngine::CompileReturn(ostream& os, int indentation)
@@ -346,15 +358,14 @@ void CompilationEngine::CompileTerm(ostream& os, int indentation)
 	switch(tag2Type(tokens.front().first))
 	{
 		case T_INI_CONST:
-			vmwrite.writePush(Segment::S_CONST, atoi(tokens.front().second.c_str()));
+			if (vmWriteFlag) vmwrite.writePush(Segment::S_CONST, atoi(tokens.front().second.c_str()));
 		case T_KEYWORD:
 		case T_STRING_CONST:
 			printTokenInXml(os, indentation+indentationSize);
 			tokens.pop();
 			break;
 		case T_IDENTIFIER:
-			printTokenInXml(os, indentation+indentationSize);
-			temp = tokens.front().second;
+			temp += printTokenInXml(os, indentation+indentationSize);
 			tokens.pop();
 			if (tokens.front().second == "[")
 			{
@@ -371,13 +382,13 @@ void CompilationEngine::CompileTerm(ostream& os, int indentation)
 			else if (tokens.front().second == ".")
 			{
 				// print char .
-				printTokenInXml(os, indentation+indentationSize);
-				temp += tokens.front().second;
+				temp += printTokenInXml(os, indentation+indentationSize);
 				tokens.pop();
 				// print subroutine name
 				temp += tokens.front().second;
-				vmwrite.writeCall(temp, 1);
-				CompileSubroutineCall(os, indentation+indentationSize);
+				int nargs = CompileSubroutineCall(os, indentation+indentationSize);
+				//cout << "name: " << temp << "\targs: " << nargs << endl;
+				if (vmWriteFlag) vmwrite.writeCall(temp, nargs);
 			}
 			break;
 		case T_SYMBOL: 
@@ -399,7 +410,7 @@ void CompilationEngine::CompileTerm(ostream& os, int indentation)
 	os << setw(indentation) << " " << "</term>" << endl;
 }
 
-void CompilationEngine::CompileSubroutineCall(ostream& os, int indentation)
+int CompilationEngine::CompileSubroutineCall(ostream& os, int indentation)
 {
 	printTokenInXml(os, indentation);
 	tokens.pop();
@@ -410,25 +421,30 @@ void CompilationEngine::CompileSubroutineCall(ostream& os, int indentation)
 		tokens.pop();
 	}
 	advanceUntilFlag(os, "(", indentation);
-	CompileExpressionList(os, indentation);
+	int nargs = CompileExpressionList(os, indentation);
 	advanceUntilFlag(os, ")", indentation);
+	return nargs;
 }
 
-void CompilationEngine::CompileExpressionList(ostream& os, int indentation) 
+int CompilationEngine::CompileExpressionList(ostream& os, int indentation) 
 {
+	int count = 0;
 	os << setw(indentation) << " " << "<expressionList>" << endl;
 	if (tokens.front().second == ")") 
 	{
 		os << setw(indentation) << " " << "</expressionList>" << endl;
-		return;
+		return count;
 	}
 	CompileExpression(os, indentation+indentationSize);
 	while (tokens.front().second == ",")
 	{
 		advanceUntilFlag(os, ",", indentation+indentationSize);	
 		CompileExpression(os, indentation+indentationSize);
+		count++;
 	}
 	os << setw(indentation) << " " << "</expressionList>" << endl;
+	// at least has one expression
+	return count+1;
 }
 
 void CompilationEngine::getSymbolsFromDec(ostream& os, int indentation)
@@ -478,5 +494,6 @@ void CompilationEngine::getSymbolsFromParaList(ostream& os, int indentation)
 		symbolTable.Define(symbolName, type, symbolTable.str2Kind(kind));
 	}
 }
+
 
 

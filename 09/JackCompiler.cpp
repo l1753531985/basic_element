@@ -56,7 +56,8 @@ int main()
 	// symbolTable is a data struct for store symbols
 	SymbolTable st;
 	VMWriter vmw{"test.vm"};
-	CompilationEngine ce{tokens, indentation, "test.xml", st, vmw};
+	CompilationEngine ce{tokens, indentation, "test.xml", st, vmw, false};
+	CompilationEngine ceForWrite{tokens, indentation, "test.xml", st, vmw, true};
 	// for test
 	//ce.printAllTokens();
 	//st.printAllElem(cout);

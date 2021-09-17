@@ -55,11 +55,13 @@ int SymbolTable::varCount(KindType kind) const
 	switch (kind)
 	{
 		case KindType::STATIC:
+			return staticSegCount;
 		case KindType::FIELD:
-			return classScope->size();
+			return fieldSegCount;
 		case KindType::ARG:
+			return argSegCount;
 		case KindType::VAR:
-			return methodScope->size();
+			return varSegCount;
 		default:
 			return -1;
 	}

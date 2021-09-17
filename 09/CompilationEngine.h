@@ -21,10 +21,10 @@ private:
 	unordered_map<string, CompileType>* compileByToken;
 	unordered_map<string, TagType>* compileByTag;
 	unordered_set<string>* ops;
-	void CompileSubroutineCall(ostream&, int);
+	int CompileSubroutineCall(ostream&, int);
 	void advanceUntilFlag(ostream&, string, int);
 	void advanceBeforeFlag(ostream&, string, int);
-	void printTokenInXml(ostream&, int);
+	string printTokenInXml(ostream&, int);
 	CompileType token2Type(string);
 	TagType tag2Type(string);
 	// for test
@@ -39,8 +39,9 @@ private:
 	void getSymbolsFromParaList(ostream&, int);
 	SymbolTable& symbolTable;
 	VMWriter& vmwrite;
+	bool vmWriteFlag;
 public:
-	CompilationEngine(const queue<pair<string, string>>&, int, string, SymbolTable&, VMWriter&);
+	CompilationEngine(const queue<pair<string, string>>&, int, string, SymbolTable&, VMWriter&, bool);
 	~CompilationEngine();
 	void CompileClass(ostream&, int);
 	void CompileClassVarDec(ostream&, int);
@@ -56,7 +57,7 @@ public:
 	void CompileIf(ostream&, int);
 	void CompileExpression(ostream&, int);
 	void CompileTerm(ostream&, int); 
-	void CompileExpressionList(ostream&, int);
+	int CompileExpressionList(ostream&, int);
 	//fot test
 	void printAllTokens();
 	void printSymbolsTables(ostream& os);
