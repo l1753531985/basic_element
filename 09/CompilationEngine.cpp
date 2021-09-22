@@ -247,12 +247,13 @@ void CompilationEngine::CompileLet(ostream& os, int indentation)
 	// output keyword and varname
 	printTokenInXml(os, indentation+indentationSize);
 	tokens.pop();
-	printTokenInXml(os, indentation+indentationSize);
-	string name = tokens.front().second;
+	string name = printTokenInXml(os, indentation+indentationSize);
 	tokens.pop();
 
+	bool isArray = false;
 	if (tokens.front().second == "[")
 	{
+		isArray = true;
 		advanceUntilFlag(os, "[", indentation+indentationSize);
 		CompileExpression(os, indentation+indentationSize);
 		advanceUntilFlag(os, "]", indentation+indentationSize);

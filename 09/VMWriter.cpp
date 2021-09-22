@@ -40,3 +40,7 @@ void VMWriter::writeCall(string name, int nargs)
 	ofile << "call " << name << " " << nargs << endl;
 }
 
+void VMWriter::writePop(Segment seg, int index)
+{
+	ofile << "pop " << seg2Str[seg] << " " << index << endl;
+}
